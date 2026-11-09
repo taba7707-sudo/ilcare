@@ -246,7 +246,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
       <span>묻지 않고 바로 저장</span>
     </label>
     <p class="hint">화면을 켜 둔 상태에서만 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요. “11일 일정 알려줘”, “내일 일정 수정”처럼 말하면 그날 일정을 읽어 줘요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1109-D · 삭제·수정·브리핑 말하기 지원</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1109-J · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
     <pre id="diag-out" class="diag" hidden></pre>
   </section>
@@ -1000,6 +1000,8 @@ function parseEvent(input, now, opts){
       confirm: '저장할까요? “저장” 또는 “취소”. 추가할 내용은 그대로 말씀하세요.',
       addMore: '추가할 내용을 말씀하세요. 없으면 곧 저장해요.',
       confirmBulk: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
+      confirmSave: '이렇게 수정할까요? “네” 또는 “취소”라고 말하세요.',
+      confirmEdit: '수정할까요? “네” 또는 “취소”라고 말하세요.',
       confirmDelete: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
       pick: '몇 번째, 또는 몇 시 일정인지 말씀하세요.',
       pickAction: '“삭제” 또는 “수정”이라고 말하세요.',
@@ -1137,9 +1139,7 @@ function parseEvent(input, now, opts){
     const id = lastId || newestId();
     const e = items.find(x => x.id === id);
     if(!e){ say('수정할 일정이 없어요. 새 일정을 말씀해 주세요.'); return; }
-    startEdit(e);
-    V.state = 'event'; showState();
-    say((e.summary || '일정') + ' 일정을 수정해요. 새 내용을 말씀해 주세요.');
+    askEdit(e);
   }
 
   const byStart = (a, b) => (evInfo(a).start || '').localeCompare(evInfo(b).start || '');
@@ -1219,7 +1219,7 @@ function parseEvent(input, now, opts){
       if(m.length === 1){
         V.pick = {list, date:d}; V.target = m[0]; lastId = m[0].id;
         if(V.act === 'del'){ V.state = 'confirmDelete'; showState(); say((m[0].summary || '일정') + ' 일정을 삭제할까요?'); }
-        else startEditVoice(m[0]);
+        else askEdit(m[0]);
         return;
       }
     }
@@ -1228,7 +1228,7 @@ function parseEvent(input, now, opts){
     if(list.length === 1){
       V.target = list[0]; lastId = list[0].id;
       if(V.act === 'del'){ V.state = 'confirmDelete'; showState(); say(bt + ' 이 일정을 삭제할까요?'); }
-      else if(V.act === 'edit'){ startEditVoice(list[0], bt + ' '); }
+      else if(V.act === 'edit'){ askEdit(list[0], bt + ' '); }
       else { V.state = 'pickAction'; showState(); say(bt + ' 이 일정을 수정할까요, 삭제할까요?'); }
     } else {
       V.state = 'pick'; showState();
@@ -1238,10 +1238,13 @@ function parseEvent(input, now, opts){
 
   function pickTarget(text, list){
     const x = text.replace(/\s+/g, '');
-    const nm = {첫:1, 한:1, 두:2, 세:3, 네:4, 다섯:5, 여섯:6};
-    let idx = 0, m = x.match(/(\d+)번/);
+    const nm = {첫:1, 한:1, 하나:1, 일:1, 두:2, 둘:2, 이:2, 세:3, 셋:3, 삼:3, 네:4, 넷:4, 사:4, 다섯:5, 오:5, 여섯:6, 육:6, 일곱:7, 칠:7, 여덟:8, 팔:8};
+    let idx = 0, m = x.match(/(\d+)\s*(번|째|째로)/);
     if(m) idx = +m[1];
-    else if((m = x.match(/(첫|두|세|네|다섯|여섯)번/))) idx = nm[m[1]];
+    else if((m = x.match(/(첫|한|하나|일|두|둘|이|세|셋|삼|네|넷|사|다섯|오|여섯|육|일곱|칠|여덟|팔)(번째|번|째)/))) idx = nm[m[1]];
+    else if((m = x.match(/^(?:삭제|수정|지워|지우|변경)?(\d+|하나|둘|셋|넷|일|이|삼|사|오)(?:번|번째)?(?:삭제|수정|지워|지우|변경|해|요|줘)*$/))) idx = /^\d+$/.test(m[1]) ? +m[1] : nm[m[1]];
+    else if(/첫째|처음|맨위|맨앞|제일위/.test(x)) idx = 1;
+    else if(/마지막|맨끝|맨아래|끝/.test(x)) idx = list.length;
     if(idx && list[idx-1]) return [list[idx-1]];
     const p = parseEvent(text, new Date());
     if(p.found.time){
@@ -1253,7 +1256,12 @@ function parseEvent(input, now, opts){
       });
       if(hit.length) return hit;
     }
-    return list.filter(e => String(e.summary || '').split(/\s+/).some(w => w.length >= 2 && x.includes(w)));
+    const toks = String(text).replace(/(일정|스케줄|약속|삭제|지워|지우|수정|변경|바꿔|바꾸|해\s*줘|해주세요|해요|좀|그거|이거|저거|것|제목|관련|연관|있는|들어간)\S{0,2}/g, ' ').split(/\s+/).filter(w => w.length >= 2);
+    return list.filter(e => {
+      const t = String(e.summary || '').replace(/\s+/g, ''), l = String(e.location || '').replace(/\s+/g, '');
+      const words = String(e.summary || '').split(/\s+/);
+      return words.some(w => w.length >= 2 && x.includes(w)) || toks.some(w => (t && t.includes(w)) || (l && l.includes(w)));
+    });
   }
 
   async function doBulk(){
@@ -1263,6 +1271,7 @@ function parseEvent(input, now, opts){
     say(n ? n + '개 일정을 삭제했어요.' : '삭제하지 못했어요. 화면을 확인해 주세요.', backToIdle);
   }
 
+  const x2 = t => String(t).replace(/\s+/g, '').replace(/(삭제|수정|지워|지우|변경|바꿔|해줘|해|줘|요)/g, '').length === 0;
   function handlePick(text){
     const list = V.pick ? V.pick.list : [];
     const cmd = cmdOf(text);
@@ -1274,9 +1283,19 @@ function parseEvent(input, now, opts){
     if(V.state === 'pick' || !target){
       let m = pickTarget(text, list);
       if(!m.length && list.length === 1) m = [list[0]];
+      const all = /(전부|모두|전체|싹|다\s*(?:삭제|지워|지우))/.test(text);
+      if(del && all && list.length){
+        V.bulk = list.map(e => e.id); V.state = 'confirmBulk'; showState();
+        say(list.length + '개 일정을 모두 삭제할까요?'); return;
+      }
+      if(!m.length && (del || edt) && x2(text)){
+        V.act = del ? 'del' : 'edit';
+        say('어떤 일정을 ' + (del ? '삭제' : '수정') + '할까요? 1번, 2번처럼 번호나 시간을 말씀해 주세요.');
+        return;
+      }
       if(m.length !== 1){
         V.retries++;
-        if(V.retries >= 2) say('알아듣지 못했어요. 다시 불러 주세요.', backToIdle);
+        if(V.retries >= 3) say('알아듣지 못했어요. 다시 불러 주세요.', backToIdle);
         else say(m.length > 1 ? '해당되는 일정이 여러 개예요. 번호로 말씀해 주세요.' : '어느 일정인지 못 알아들었어요. 번호나 시간을 말씀해 주세요.');
         return;
       }
@@ -1285,11 +1304,15 @@ function parseEvent(input, now, opts){
     lastId = target.id; V.retries = 0;
     const name = target.summary || '일정';
     if(del){ V.state = 'confirmDelete'; showState(); say(name + ' 일정을 삭제할까요?'); return; }
-    if(edt){ startEditVoice(target); return; }
+    if(edt){ askEdit(target); return; }
     V.state = 'pickAction'; showState();
     say(name + ' 일정이에요. 삭제할까요, 수정할까요?');
   }
 
+  function askEdit(e, prefix){
+    V.target = e; lastId = e.id; V.state = 'confirmEdit'; showState();
+    say((prefix || '') + (e.summary || '일정') + ' 일정을 수정할까요?');
+  }
   function startEditVoice(e, prefix){
     startEdit(e);
     V.target = e; V.retries = 0; V.state = 'editWhat'; showState();
@@ -1311,6 +1334,10 @@ function parseEvent(input, now, opts){
       return;
     }
     render();
+    V.state = 'confirmSave'; V.retries = 0; showState();
+    say('이렇게 수정할까요? ' + spokenEvent() + '. 네 또는 취소라고 말씀하세요. 더 바꿀 내용을 말씀하셔도 돼요.');
+  }
+  async function doEditSave(){
     const sp = spokenEvent();
     await saveEdit();
     say(lastOk ? '수정했어요. ' + sp : '수정하지 못했어요. 화면을 확인해 주세요.', backToIdle);
@@ -1341,7 +1368,31 @@ function parseEvent(input, now, opts){
     }
     if(V.state === 'event'){ const k = intentOf(text); if(k){ runIntent(k, text); return; } }
     const cmd = cmdOf(text);
-    if((V.state === 'confirmDelete' || V.state === 'confirmBulk') && !['yes', 'no', 'del', 'edit'].includes(cmd)){
+    if(V.state === 'confirmSave'){
+      const xs = text.replace(/\s+/g, '');
+      if(cmd === 'no' || /^(아니|취소|그만|안\s*해|말고)/.test(xs)){ discardDraft(); say('수정하지 않았어요.', backToIdle); return; }
+      if(cmd === 'yes' || /^(수정|네|응|예|그래|맞|저장|해줘|해요|오케이|좋아|어|어어|웅|음|ㅇㅇ|넹|넵)/.test(xs)){ doEditSave(); return; }
+      if(applyChanges(text, false)){ render(); say('이렇게 수정할까요? ' + spokenEvent() + '.'); return; }
+      say('수정할까요? 네 또는 취소라고 말씀해 주세요.'); return;
+    }
+    if(V.state === 'confirmEdit'){
+      const xs = text.replace(/\s+/g, '');
+      const hasDate = parseEvent(text, new Date(), {past:true}).found.date;
+      if(cmd === 'no' || /^(아니|취소|그만|안\s*해|말고)/.test(xs)){ say('수정하지 않았어요.', backToIdle); return; }
+      if(!hasDate && (cmd === 'yes' || cmd === 'edit' || /수정|변경|바꿔|바꾸|전부|네|응|예|그래|맞|해줘|해요|오케이|좋아/.test(xs) || /^(어|어어|웅|음|ㅇㅇ|넹|넵)$/.test(xs))){
+        startEditVoice(V.target); return;
+      }
+      const k = intentOf(text); if(k){ runIntent(k, text); return; }
+      say('수정할까요? 네 또는 취소라고 말씀해 주세요.'); return;
+    }
+    if(V.state === 'confirmDelete' || V.state === 'confirmBulk'){
+      const xs = text.replace(/\s+/g, '');
+      const hasDate = parseEvent(text, new Date(), {past:true}).found.date;
+      if(cmd === 'no' || /^(아니|취소|그만|안\s*해|말고|삭제\s*하지)/.test(xs)){ say('삭제하지 않았어요.', backToIdle); return; }
+      if(!hasDate && (cmd === 'yes' || cmd === 'del' || /삭제|지워|지우|전부|모두|네|응|예|그래|맞|해줘|해요|오케이|좋아/.test(xs) || /^(어|어어|웅|음|ㅇㅇ|넹|넵)$/.test(xs))){
+        if(V.state === 'confirmBulk') doBulk(); else doDelete();
+        return;
+      }
       const k = intentOf(text); if(k){ runIntent(k, text); return; }
     }
     if((V.state === 'confirm' || V.state === 'addMore') && MANAGE.test(text) && !['yes', 'no', 'del', 'edit'].includes(cmd)){
@@ -1487,7 +1538,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1109-D');
+    push('버전: 1109-J');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
