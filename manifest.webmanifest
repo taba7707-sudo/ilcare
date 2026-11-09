@@ -1,0 +1,12 @@
+{
+  "name": "일정케어",
+  "short_name": "일정케어",
+  "description": "말하면 일정이 되는 음성 캘린더",
+  "lang": "ko",
+  "start_url": "./?src=app",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2457F5",
+  "theme_color": "#2457F5"
+}
