@@ -245,8 +245,13 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
       <span class="sw" aria-hidden="true"></span>
       <span>묻지 않고 바로 저장</span>
     </label>
+    <label class="auto" for="barge">
+      <input id="barge" type="checkbox" checked>
+      <span class="sw" aria-hidden="true"></span>
+      <span>말하는 중에 끼어들기</span>
+    </label>
     <p class="hint">화면을 켜 둔 상태에서만 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요. “11일 일정 알려줘”, “내일 일정 수정”처럼 말하면 그날 일정을 읽어 줘요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1109-J · 삭제·수정·브리핑 말하기 지원</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1109-K · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
     <pre id="diag-out" class="diag" hidden></pre>
   </section>
@@ -457,7 +462,7 @@ function parseEvent(input, now, opts){
   const ta = $('said'), fTitle = $('f-title'), fDate = $('f-date'), fStart = $('f-start'), fEnd = $('f-end'), fLoc = $('f-loc');
   const bSave = $('b-save'), bUpdate = $('b-update'), bDelete = $('b-delete'), bCancel = $('b-cancel'), go = $('go');
   const summary = $('summary'), statusEl = $('status'), card = $('card'), cardH = $('card-h');
-  const mic = $('mic'), icMic = $('ic-mic'), icStop = $('ic-stop'), sampleTag = $('sampleTag'), autoSw = $('auto');
+  const mic = $('mic'), icMic = $('ic-mic'), icStop = $('ic-stop'), sampleTag = $('sampleTag'), autoSw = $('auto'), bargeSw = $('barge');
   const listEl = $('list'), listMsg = $('list-msg');
 
   let sample = true, hint = '', rec = null, listening = false, errored = false, heard = '';
@@ -957,7 +962,8 @@ function parseEvent(input, now, opts){
     return null;
   }
   const BRIEF = /(일정|스케줄|약속).{0,14}(말해|알려|브리핑|읽어|들려|보여|있어|있니|뭐\s*야|뭐\s*있)\S{0,4}\s*$|브리핑/;
-  const MANAGE = /삭제|지워|지우|수정|변경|바꿔|바꾸|(일정|약속).{0,8}취소/;
+  const MANAGE = /삭제|지워|지우|없애|제거|날려|수정|변경|바꿔|바꾸|(일정|약속).{0,8}취소/;
+  const ALLRE = /전부|전체|모두|모든|몽땅|싹|통째|일괄|다\s*(삭제|지워|지우|없애)/;
   function intentOf(t){
     const x = String(t);
     const c = cmdOf(x);
@@ -974,7 +980,7 @@ function parseEvent(input, now, opts){
 
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const wakeSw = $('wake');
-  const V = {on:false, state:'event', rec:null, talking:false, retries:0, fails:0, idle:0, fatal:false};
+  const V = {on:false, state:'event', rec:null, talking:false, sayId:0, recLive:false, spoken:'', spokeEnd:0, retries:0, fails:0, idle:0, fatal:false};
   let wl = null;
 
   function setListening(on){
@@ -1020,9 +1026,19 @@ function parseEvent(input, now, opts){
     return t;
   }
 
+  const norm = t => String(t).replace(/[^0-9A-Za-z가-힣]/g, '');
+  function isEcho(t, sp){
+    t = norm(t); sp = norm(sp);
+    if(!t) return true;
+    if(sp.includes(t)) return true;
+    if(t.length < 2) return false;
+    let hit = 0, n = 0;
+    for(let i = 0; i < t.length - 1; i++){ n++; if(sp.includes(t.substr(i, 2))) hit++; }
+    return n > 0 && hit / n >= 0.6;
+  }
   function say(text, after){
-    V.talking = true;
-    try{ if(V.rec) V.rec.abort(); }catch(e){}
+    V.talking = true; V.spoken = text; const sid = ++V.sayId;
+    if(!(bargeSw.checked && V.recLive)){ try{ if(V.rec) V.rec.abort(); }catch(e){} }
     return new Promise(res => {
       let done = false;
       const fin = () => { if(done) return; done = true; res(); };
@@ -1036,9 +1052,10 @@ function parseEvent(input, now, opts){
         setTimeout(fin, Math.min(12000, 1500 + text.length * 260));
       }catch(e){ fin(); }
     }).then(() => {
-      V.talking = false;
+      if(sid !== V.sayId) return;
+      V.talking = false; V.spokeEnd = Date.now();
       if(after) after();
-      if(V.on) vListen();
+      if(V.on && !V.recLive) vListen();
     });
   }
 
@@ -1174,7 +1191,7 @@ function parseEvent(input, now, opts){
     const on = dt => items.filter(e => evInfo(e).date === ymd(dt)).sort(byStart);
     let list = on(d), byWord = false;
     if(!p.found.date){
-      const words = text.replace(/(일정|스케줄|약속|삭제|지워|지우|수정|변경|바꿔|바꾸|알려|말해|브리핑|해\s*줘|해주세요|해요|좀|전부|모두|전체|빼고|제외|있어|뭐야)\S{0,3}/g, ' ')
+      const words = text.replace(/(일정|스케줄|약속|삭제|지워|지우|없애|제거|수정|변경|바꿔|바꾸|알려|말해|브리핑|해\s*줘|해주세요|해요|좀|전부|모두|전체|모든|몽땅|싹|통째|일괄|빼고|제외|있어|뭐야)\S{0,3}/g, ' ')
         .replace(/\d+\s*(시|분|번째|번)/g, ' ').split(/\s+/).filter(w => w.length >= 2);
       let m = words.length ? items.filter(e => words.some(w => (e.summary || '').includes(w) || (e.location || '').includes(w))) : [];
       if(m.length && p.found.time){
@@ -1199,8 +1216,8 @@ function parseEvent(input, now, opts){
     const bt = byWord ? briefTextMulti(list) : briefText(d, list);
     setStatus(bt);
     if(kind === 'brief' || !list.length){ say(bt, backToIdle); return; }
-    V.act = /삭제|지워|지우/.test(text) ? 'del' : (/수정|변경|바꿔|바꾸/.test(text) ? 'edit' : null);
-    const all = /(전부|모두|전체|싹|다\s*(?:삭제|지워|지우))/.test(text);
+    V.act = /삭제|지워|지우|없애|제거/.test(text) ? 'del' : (/수정|변경|바꿔|바꾸/.test(text) ? 'edit' : null);
+    const all = ALLRE.test(text);
     const exRe = /빼고|제외하고|제외|말고|만\s*남기고|만\s*남겨/;
     if(V.act === 'del' && (all || exRe.test(text))){
       let keep = [];
@@ -1224,7 +1241,7 @@ function parseEvent(input, now, opts){
       }
     }
     V.pick = {list, date:d}; V.target = null; V.retries = 0;
-    V.act = /삭제|지워/.test(text) ? 'del' : (/수정|변경|바꿔|바꾸/.test(text) ? 'edit' : null);
+    V.act = /삭제|지워|지우|없애|제거/.test(text) ? 'del' : (/수정|변경|바꿔|바꾸/.test(text) ? 'edit' : null);
     if(list.length === 1){
       V.target = list[0]; lastId = list[0].id;
       if(V.act === 'del'){ V.state = 'confirmDelete'; showState(); say(bt + ' 이 일정을 삭제할까요?'); }
@@ -1275,7 +1292,7 @@ function parseEvent(input, now, opts){
   function handlePick(text){
     const list = V.pick ? V.pick.list : [];
     const cmd = cmdOf(text);
-    let del = cmd === 'del' || /삭제|지워/.test(text);
+    let del = cmd === 'del' || /삭제|지워|지우|없애|제거/.test(text);
     let edt = cmd === 'edit' || /수정|변경|바꿔|바꾸/.test(text);
     if(!del && !edt && V.act){ del = V.act === 'del'; edt = V.act === 'edit'; }
     if(cmd === 'no'){ say('취소했어요.', backToIdle); return; }
@@ -1283,7 +1300,7 @@ function parseEvent(input, now, opts){
     if(V.state === 'pick' || !target){
       let m = pickTarget(text, list);
       if(!m.length && list.length === 1) m = [list[0]];
-      const all = /(전부|모두|전체|싹|다\s*(?:삭제|지워|지우))/.test(text);
+      const all = ALLRE.test(text);
       if(del && all && list.length){
         V.bulk = list.map(e => e.id); V.state = 'confirmBulk'; showState();
         say(list.length + '개 일정을 모두 삭제할까요?'); return;
@@ -1389,7 +1406,7 @@ function parseEvent(input, now, opts){
       const xs = text.replace(/\s+/g, '');
       const hasDate = parseEvent(text, new Date(), {past:true}).found.date;
       if(cmd === 'no' || /^(아니|취소|그만|안\s*해|말고|삭제\s*하지)/.test(xs)){ say('삭제하지 않았어요.', backToIdle); return; }
-      if(!hasDate && (cmd === 'yes' || cmd === 'del' || /삭제|지워|지우|전부|모두|네|응|예|그래|맞|해줘|해요|오케이|좋아/.test(xs) || /^(어|어어|웅|음|ㅇㅇ|넹|넵)$/.test(xs))){
+      if(!hasDate && (cmd === 'yes' || cmd === 'del' || /삭제|지워|지우|없애|제거|네|응|예|그래|맞|해줘|해요|오케이|좋아/.test(xs) || ALLRE.test(xs) || /^(어|어어|웅|음|ㅇㅇ|넹|넵)$/.test(xs))){
         if(V.state === 'confirmBulk') doBulk(); else doDelete();
         return;
       }
@@ -1453,9 +1470,19 @@ function parseEvent(input, now, opts){
       let got = false;
       r.lang = 'ko-KR'; r.interimResults = true; r.continuous = true; r.maxAlternatives = 3;
       V.done = 0; clearTimeout(V.timer);
-      r.onstart = () => { V.fails = 0; setListening(true); showState(); };
+      r.onstart = () => { V.recLive = true; V.fails = 0; setListening(true); showState(); };
       r.onresult = e => {
-        if(V.talking || r !== V.rec) return;
+        if(r !== V.rec) return;
+        if(V.talking){
+          if(!bargeSw.checked) return;
+          const tt = (e.results[e.results.length - 1][0].transcript || '').trim();
+          if(isEcho(tt, V.spoken)) return;
+          V.sayId++; V.talking = false;
+          try{ window.speechSynthesis.cancel(); }catch(_){}
+        } else if(Date.now() - V.spokeEnd < 2500){
+          const tt = (e.results[e.results.length - 1][0].transcript || '').trim();
+          if(isEcho(tt, V.spoken)) return;
+        }
         const idx = e.results.length - 1;
         if(idx < V.done) return;
         got = true;
@@ -1484,6 +1511,7 @@ function parseEvent(input, now, opts){
       };
       r.onend = () => {
         if(r !== V.rec) return;
+        V.recLive = false;
         if(!V.on || V.talking || V.fatal) return;
         if(got) V.idle = 0;
         else if(V.state !== 'wake'){
@@ -1538,7 +1566,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1109-J');
+    push('버전: 1109-K');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
