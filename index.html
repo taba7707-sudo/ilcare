@@ -76,8 +76,7 @@ body{
 .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 
 .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.brand{font-weight:700;font-size:15px;letter-spacing:-.01em;display:inline-flex;align-items:center;gap:7px}
-.brand svg{width:22px;height:22px;flex:none;color:var(--accent)}
+.brand{font-weight:700;font-size:15px;letter-spacing:-.01em}
 .top time{font-size:12px;color:var(--muted)}
 
 .speak{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
@@ -192,49 +191,12 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
 .toast.bad span{background:var(--danger);color:var(--surface)}
 @media (prefers-reduced-motion:reduce){.toast span{transition:none}}
 
-/* 애니메이션 및 스플래시 */
-#splash{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#FFFFFF;}
-#splash.done{opacity:0;visibility:hidden;transition:opacity .3s linear,visibility .3s}
-
-#splash-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  position: relative;
-}
-
-#splash-logo-wrap {
-  position: relative;
-  width: 60px;
-  height: 60px;
-}
-
-#splash-logo-svg {
-  width: 100%;
-  height: 100%;
-}
-
-.ch {
-  position: absolute;
-  font-size: 20px;
-  font-weight: 700;
-  color: #2457F5;
-  opacity: 0;
-  transform: translate(-50%, -50%);
-  left: 50%;
-  top: 50%;
-  transition: opacity 0.3s ease;
-}
-
-#splash-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #2457F5;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
+/* 시작 화면: 흰 바탕, 파란 글자 "일정케어"가 붙어서 구처럼 돈다 */
+#splash{position:fixed;inset:0;z-index:999;display:flex;align-items:center;flex-direction:column;gap:14px;justify-content:center;background:#FFFFFF;color:#2457F5}
+#splash.done{opacity:0;visibility:hidden;transition:opacity .14s linear,visibility .14s}
+#splash .orb{position:relative;width:200px;height:130px}
+#splash .logo{width:60px;height:60px;flex:none}
+#splash .ch{position:absolute;left:50%;top:50%;font-size:30px;font-weight:700;line-height:1;margin:-15px 0 0 -15px;width:30px;text-align:center;color:#2457F5;will-change:transform,opacity}
 .row.hit{box-shadow:0 0 0 2px var(--accent) inset}
 .maplink{margin-left:6px;color:var(--accent);font-size:12px;text-decoration:none;border-bottom:1px solid currentColor}
 .addbar{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
@@ -243,48 +205,17 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
 #gcal-box:not([hidden]){display:flex}
 .addbar-t{font-size:13px;color:var(--muted)}
 .addbar-b{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.brand{display:inline-flex;align-items:center;gap:7px}
+.brand svg{width:22px;height:22px;flex:none;color:var(--accent)}
 </style>
 <style>:root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 
-<div id="splash" role="img" aria-label="일정케어 로딩 화면">
-  <div id="splash-container">
-    <div id="splash-logo-wrap">
-      <!-- 중앙 로고 (최종 정착 위치) -->
-      <svg id="splash-logo-svg" viewBox="0 0 72 72" aria-hidden="true" style="opacity:0; transition: opacity 0.3s ease">
-        <defs><clipPath id="Lh2"><rect width="36" height="72"/></clipPath><clipPath id="Rh2"><rect x="36" width="36" height="72"/></clipPath></defs>
-        <g fill="none" style="stroke:#2457F5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
-          <g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g>
-        </g>
-        <g clip-path="url(#Rh2)">
-          <g fill="none" style="stroke:#FFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-          <g fill="none" style="stroke:#2457F5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-        </g>
-        <g clip-path="url(#Lh2)">
-          <g fill="none" style="stroke:#2457F5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-        </g>
-        <g clip-path="url(#Lh2)">
-          <g fill="none" style="stroke:#FFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-          <g fill="none" style="stroke:#2457F5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-        </g>
-      </svg>
-      <!-- 회전하는 글자들 -->
-      <span class="ch" id="ch-1">일</span>
-      <span class="ch" id="ch-2">정</span>
-      <span class="ch" id="ch-3">케</span>
-      <span class="ch" id="ch-4">어</span>
-    </div>
-    <div id="splash-title">일정케어</div>
-  </div>
-</div>
-
+<div id="splash" role="img" aria-label="일정케어 불러오는 중"><svg class="logo" viewBox="0 0 72 72" aria-hidden="true"><defs><clipPath id="Ls"><rect width="36" height="72"/></clipPath><clipPath id="Rs"><rect x="36" width="36" height="72"/></clipPath></defs><g fill="none" style="stroke:#2457F5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g clip-path="url(#Rs)"><g fill="none" style="stroke:#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:#2457F5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Ls)"><g fill="none" style="stroke:#2457F5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Ls)"><g fill="none" style="stroke:#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:#2457F5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g></svg><div class="orb"><span class="ch">일</span><span class="ch">정</span><span class="ch">케</span><span class="ch">어</span></div></div>
 <main class="app">
   <header class="top">
-    <span class="brand">
-      <svg viewBox="0 0 72 72" aria-hidden="true"><defs><clipPath id="Lh"><rect width="36" height="72"/></clipPath><clipPath id="Rh"><rect x="36" width="36" height="72"/></clipPath></defs><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g clip-path="url(#Rh)"><g fill="none" style="stroke:var(--bg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Lh)"><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Lh)"><g fill="none" style="stroke:var(--bg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g></svg>
-      일정케어
-    </span>
+    <span class="brand"><svg viewBox="0 0 72 72" aria-hidden="true"><defs><clipPath id="Lh"><rect width="36" height="72"/></clipPath><clipPath id="Rh"><rect x="36" width="36" height="72"/></clipPath></defs><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g clip-path="url(#Rh)"><g fill="none" style="stroke:var(--bg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Lh)"><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Lh)"><g fill="none" style="stroke:var(--bg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g></svg>일정케어</span>
     <time id="today" class="mono"></time>
   </header>
 
@@ -308,16 +239,8 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <input id="wake" type="checkbox" hidden>
     <input id="auto" type="checkbox" hidden>
     <input id="barge" type="checkbox" hidden>
-    <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-O · 삭제·수정·브리핑 말하기 지원</p>
-    <button id="diag" class="link" type="button">마이크 점검</button>
-    <button id="gcal-link" class="link" type="button">구글 캘린더 연결</button>
-    <div id="gcal-box" hidden>
-      <input id="gas-url" type="url" inputmode="url" autocomplete="off" placeholder="웹 앱 주소를 붙여넣으세요" style="font:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);width:100%">
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="gas-ok" class="btn" type="button">연결</button><button id="gas-off" class="btn ghost" type="button">연결 해제</button></div>
-      <p id="gas-msg" class="hint" style="margin:0"></p>
-    </div>
-    <pre id="diag-out" class="diag" hidden></pre>
+    <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요. “11일 일정 알려줘”, “내일 일정 수정”처럼 말하면 그날 일정을 읽어 줘요.</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1111-C · 삭제·수정·브리핑 말하기 지원</p>
   </section>
 
   <section class="said">
@@ -374,7 +297,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     try{
       var d = document.getElementById('errbar');
       if(!d){ d = document.createElement('div'); d.id = 'errbar'; d.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99;background:#C62828;color:#fff;font:12px/1.4 sans-serif;padding:8px 12px;word-break:break-all'; (document.body || document.documentElement).appendChild(d); }
-      d.textContent = '오류: ' + (e.message || '') + ' (' + String(e.lineno || '') + ') — 이 화면을 캡처해 주세요. 버전 1110-O';
+      d.textContent = '오류: ' + (e.message || '') + ' (' + String(e.lineno || '') + ') — 이 화면을 캡처해 주세요. 버전 1111-C';
     }catch(_){}
   });
 })();
@@ -401,14 +324,14 @@ function to24(period, h){
 }
 
 const FIXED_H = [
-  ['크리스마스이브','크리스마스\s*이브',12,24],['크리스마스','크리스마스|성탄절',12,25],['광복절','광복절',8,15],
-  ['삼일절','삼일절|3\.1절',3,1],['어린이날','어린이날',5,5],['어버이날','어버이날',5,8],['현충일','현충일',6,6],
-  ['제헌절','제헌절',7,17],['개천절','개천절',10,3],['한글날','한글날',10,9],['신정','신정|새해\s*첫날',1,1]
+  ['크리스마스이브','크리스마스\\s*이브',12,24],['크리스마스','크리스마스|성탄절',12,25],['광복절','광복절',8,15],
+  ['삼일절','삼일절|3\\.1절',3,1],['어린이날','어린이날',5,5],['어버이날','어버이날',5,8],['현충일','현충일',6,6],
+  ['제헌절','제헌절',7,17],['개천절','개천절',10,3],['한글날','한글날',10,9],['신정','신정|새해\\s*첫날',1,1]
 ];
 const LUNAR_H = [
   ['설날','설날|구정',{2026:[2,17],2027:[2,6],2028:[1,26]}],
   ['추석','추석|한가위',{2026:[9,25],2027:[9,15],2028:[10,3]}],
-  ['부처님오신날','부처님\s*오신\s*날|석가탄신일',{2026:[5,24],2027:[5,13],2028:[5,2]}]
+  ['부처님오신날','부처님\\s*오신\\s*날|석가탄신일',{2026:[5,24],2027:[5,13],2028:[5,2]}]
 ];
 function holidayFind(s, today){
   for(const [label, re, m, d] of FIXED_H){
@@ -483,10 +406,10 @@ function parseEvent(input, now, opts){
   }
 
   // 시각
-  const T = '(?:('+PERIOD+')\s*)?(\d{1,2})\s*시\s*(?:(\d{1,2})\s*분|(반))?';
-  const rangeRe = new RegExp(T+'\s*(?:부터|~|-|–)\s*'+T+'\s*(?:까지)?(?:에(?=\s))?');
-  const oneRe = new RegExp(T+'(?!간)(?:에(?=\s))?');
-  const colonRe = new RegExp('(?:('+PERIOD+')\s*)?(\d{1,2}):(\d{2})');
+  const T = '(?:('+PERIOD+')\\s*)?(\\d{1,2})\\s*시\\s*(?:(\\d{1,2})\\s*분|(반))?';
+  const rangeRe = new RegExp(T+'\\s*(?:부터|~|-|–)\\s*'+T+'\\s*(?:까지)?(?:에(?=\\s))?');
+  const oneRe = new RegExp(T+'(?!간)(?:에(?=\\s))?');
+  const colonRe = new RegExp('(?:('+PERIOD+')\\s*)?(\\d{1,2}):(\\d{2})');
   const mk = (p,h,mi,half) => to24(p, +h)*60 + (mi ? +mi : (half ? 30 : 0));
   let st = null, en = null;
   if((m = s.match(rangeRe))){
@@ -591,12 +514,7 @@ function parseEvent(input, now, opts){
   function detailsFor(loc){
     let t = '말하면 일정으로 등록';
     const m = mapUrls(loc);
-    if(m) t += '
-
-장소: ' + loc + '
-네이버지도: ' + m.naver + '
-카카오맵: ' + m.kakao + '
-구글지도: ' + m.google;
+    if(m) t += '\n\n장소: ' + loc + '\n네이버지도: ' + m.naver + '\n카카오맵: ' + m.kakao + '\n구글지도: ' + m.google;
     return t;
   }
   function gcalUrl(){
@@ -658,8 +576,7 @@ function parseEvent(input, now, opts){
     return u + ';l.beginTime=' + b + ';l.endTime=' + e + ';B.allDay=' + (t.allDay ? 'true' : 'false') + ';end';
   }
   function icsFrom(f){
-    const esc = s => String(s || '').replace(/\/g,'\\').replace(/;/g,'\;').replace(/,/g,'\,').replace(/?
-/g,'\n');
+    const esc = s => String(s || '').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
     const [y,mo,d] = f.date.split('-').map(Number), day = y + pad(mo) + pad(d), t = normTimes(f);
     const n = new Date();
     const stamp = n.getUTCFullYear() + pad(n.getUTCMonth()+1) + pad(n.getUTCDate()) + 'T' + pad(n.getUTCHours()) + pad(n.getUTCMinutes()) + pad(n.getUTCSeconds()) + 'Z';
@@ -670,9 +587,17 @@ function parseEvent(input, now, opts){
     if(f.loc) L.push('LOCATION:' + esc(f.loc));
     L.push('DESCRIPTION:' + esc(detailsFor(f.loc)));
     L.push('END:VEVENT','END:VCALENDAR');
-    return L.join('
-') + '
-';
+    return L.join('\r\n') + '\r\n';
+  }
+  function openSamsung(f){
+    let left = false;
+    const onHide = () => { if(document.visibilityState === 'hidden') left = true; };
+    document.addEventListener('visibilitychange', onHide);
+    try{ location.href = intentFrom(f); }catch(_){}
+    setTimeout(() => {
+      document.removeEventListener('visibilitychange', onHide);
+      if(!left) downloadIcs(f); /* 캘린더 앱이 안 열렸으면 파일로 받게 한다 */
+    }, 1400);
   }
   function downloadIcs(f){
     try{
@@ -840,8 +765,7 @@ function parseEvent(input, now, opts){
       lastOk = true; lastId = ev.id;
       blankEditor(); loadLocal(); showAddBar(f); return;
     }
-    const input = Object.assign({summary: f.title, description: detailsFor(f.loc) + '
-· ' + TAG}, timesFor(f));
+    const input = Object.assign({summary: f.title, description: detailsFor(f.loc) + '\n· ' + TAG}, timesFor(f));
     if(f.loc) input.location = f.loc;
     setBusy(true);
     try{
@@ -871,8 +795,7 @@ function parseEvent(input, now, opts){
       blankEditor(); applyMode(); loadLocal(); return;
     }
     const t = timesFor(f);
-    const input = Object.assign({eventId: editId, summary: f.title, location: f.loc, description: detailsFor(f.loc) + '
-· ' + TAG}, t);
+    const input = Object.assign({eventId: editId, summary: f.title, location: f.loc, description: detailsFor(f.loc) + '\n· ' + TAG}, t);
     if(!t.allDay && editWasAllDay) input.allDay = false;
     setBusy(true);
     try{
@@ -964,7 +887,7 @@ function parseEvent(input, now, opts){
       if(!mcp){
         const lf = fFromEvent(e);
         if(validDate(lf.date)){
-          if(isAndroid){ const sa = document.createElement('a'); sa.className = 'mini'; sa.textContent = '삼성 캘린더'; sa.href = intentFrom(lf); acts.append(sa); }
+          if(isAndroid){ const sa = document.createElement('a'); sa.className = 'mini'; sa.textContent = '삼성 캘린더'; sa.href = '#'; sa.addEventListener('click', ev => { ev.preventDefault(); openSamsung(lf); }); acts.append(sa); }
           const ga = document.createElement('a'); ga.className = 'mini'; ga.textContent = 'Google'; ga.href = gcalFrom(lf); ga.target = '_blank'; ga.rel = 'noopener'; acts.append(ga);
         }
       }
@@ -978,7 +901,7 @@ function parseEvent(input, now, opts){
   function showAddBar(f){
     if(mcp) return;
     const bar = $('addbar'), sam = $('ab-sam');
-    if(isAndroid){ sam.href = intentFrom(f); sam.hidden = false; } else sam.hidden = true;
+    if(isAndroid){ sam.removeAttribute('href'); sam.onclick = ev => { ev.preventDefault(); openSamsung(addF || f); }; sam.hidden = false; } else sam.hidden = true;
     $('ab-g').href = gcalFrom(f);
     addF = f; bar.hidden = false;
     clearTimeout(addT); addT = setTimeout(() => { bar.hidden = true; }, 180000);
@@ -1036,7 +959,7 @@ function parseEvent(input, now, opts){
 
   /* ---------- 음성: “일정케어” 호출, 말로 저장·취소·삭제·수정 ---------- */
   /*VOICE_PURE_START*/
-  const WAKE = /(일정|이렇게|일종)\s*(케어|캐어|케이|캐이|께어|카이|카어|게어|계어|care|kare)/i;
+  const WAKE = /(일정|이렇게|일종|일전|인정|이정)\s*(케어|캐어|케이|캐이|께어|카이|카어|게어|계어|케얼|캐얼|care|kare)/i;
   const CMD = {
     yes: /^(네|넹|넵|예|응|웅|어|어어|그래|좋아|맞아|맞아요|확인|저장|등록|오케이|ok)/i,
     no: /^(아니|취소|그만|종료|닫아)/,
@@ -1091,7 +1014,7 @@ function parseEvent(input, now, opts){
     const t = {
       wake: '“일정케어”라고 불러 보세요. 화면은 켜 두세요.',
       event: '일정을 말씀하세요.',
-      confirm: '저장할까요? “저장” 또는 “취소”. 추가할 내용은 그대로 말씀하세요.',
+      confirm: '등록할까요? “네”, “저장”, “어” 또는 “취소”라고 말씀하세요.',
       addMore: '추가할 내용을 말씀하세요. 없으면 곧 저장해요.',
       confirmBulk: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
       startAsk: '일정을 등록할까요? “네”라고 말씀하세요.',
@@ -1151,36 +1074,50 @@ function parseEvent(input, now, opts){
     const show = () => { if(!V.unlocked && !active()) document.body.appendChild(bar); else if(active()) V.unlocked = true; };
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show); else show();
   })();
-  
-  // 아나운서 톤 음성 합성
-  function say(text, after, asAnnouncer = false){
-    V.talking = true; V.spoken = text; const sid = ++V.sayId;
-    if(!(bargeSw.checked && V.recLive)){ try{ if(V.rec) V.rec.abort(); }catch(e){} }
+  /* 음성 안내. 안드로이드는 마이크가 완전히 꺼지기 전에 말하면 소리가 안 나오므로,
+     ① 마이크 종료(onend)를 기다리고 ② 기본 음성으로 먼저 말하고 ③ 1.6초 안에 시작 안 하면 한 번 더 시도하고
+     ④ 그래도 안 되면 글자로만 보여 주고 곧바로 마이크를 다시 켠다 (몇 초씩 멈춰 있지 않게) */
+  function waitRecEnd(){
     return new Promise(res => {
-      let done = false, started = false;
+      if(!V.recLive){ res(); return; }
+      let ok = false; const go = () => { if(ok) return; ok = true; V.endWait = null; res(); };
+      V.endWait = go; setTimeout(go, 1000);
+    });
+  }
+  try{ if('speechSynthesis' in window){ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => { try{ window.speechSynthesis.getVoices(); }catch(_){} }; } }catch(_){}
+  function say(text, after){
+    V.talking = true; V.spoken = text; const sid = ++V.sayId;
+    try{ setStatus('일정케어: ' + text); }catch(_){}
+    const stopRec = (bargeSw.checked && V.recLive) ? null : (() => { try{ if(V.rec) V.rec.abort(); }catch(e){} });
+    if(stopRec) stopRec();
+    return new Promise(res => {
+      let done = false, started = false, tries = 0;
       const fin = () => { if(done) return; done = true; res(); };
-      setTimeout(() => { if(!started && !done){ V.ttsSilent = true; chime(2); toast('안내 음성이 막혀 있어요. 화면 위에 글자로 보여드려요.'); } }, 1800);
-      try{
-        if(!('speechSynthesis' in window)){ fin(); return; }
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'ko-KR';
-        
-        // 일반 vs 세련된 톤 조절
-        if(asAnnouncer) {
-            u.rate = 1.0; 
-            u.pitch = 1.0; // 차분하고 안정적
-        } else {
-            u.rate = 1.05;
-            u.pitch = 1.05;
-        }
-
-        u.onstart = () => { started = true; V.ttsSilent = false; };
-        u.onend = fin;
-        u.onerror = fin;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
-        setTimeout(fin, Math.min(12000, 1500 + text.length * 260));
-      }catch(e){ fin(); }
+      if(!('speechSynthesis' in window)){ fin(); return; }
+      const attempt = () => {
+        if(done || sid !== V.sayId){ fin(); return; }
+        tries++;
+        try{
+          const synth = window.speechSynthesis;
+          try{ synth.cancel(); }catch(_){}
+          try{ synth.resume(); }catch(_){}
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'ko-KR'; u.rate = 1.0; u.pitch = 1.0; u.volume = 1;
+          if(tries > 1){
+            try{ const vs = synth.getVoices().filter(v => /^ko/i.test(v.lang)); const f = vs.find(v => v.localService) || vs[0]; if(f) u.voice = f; }catch(_){}
+          }
+          V.utt = u; /* 말하는 중에 가비지 수집되어 onend가 안 오는 문제 방지 */
+          u.onstart = () => { started = true; V.ttsSilent = false; };
+          u.onend = () => { started = true; fin(); };
+          u.onerror = () => { if(!started && tries < 2){ setTimeout(attempt, 150); } else fin(); };
+          setTimeout(() => { try{ synth.speak(u); }catch(_){ fin(); } }, 120);
+        }catch(_){ fin(); }
+      };
+      waitRecEnd().then(() => setTimeout(attempt, 250));
+      /* 1.8초 안에 시작 안 하면 한 번 더, 3.6초에도 안 하면 글자로만 보여 주고 넘어간다 */
+      setTimeout(() => { if(!started && !done && tries < 2) attempt(); }, 1500);
+      setTimeout(() => { if(!started && !done){ V.ttsSilent = true; chime(2); toast('안내 음성이 막혀 있어요. 화면 글자를 보고 “네”라고 말씀하세요.'); fin(); } }, 2900);
+      setTimeout(fin, Math.min(14000, 1600 + text.length * 230));
     }).then(() => {
       if(sid !== V.sayId) return;
       V.talking = false; V.spokeEnd = Date.now();
@@ -1214,7 +1151,7 @@ function parseEvent(input, now, opts){
         V.partial = ''; V.pAsk = 0; V.retries = 0;
         if(!fTitle.value.trim() || fTitle.value.trim() === '새 일정') fTitle.value = '약속';
         render(); askConfirm();
-      }, 2500);
+      }, 1200);
       return;
     }
     V.pTimer = setTimeout(() => {
@@ -1231,26 +1168,40 @@ function parseEvent(input, now, opts){
     V.cTimer = setTimeout(() => {
       if(!V.on || V.talking) return;
       if(V.state === 'confirm'){
-        if(!V.nag){ V.nag = 1; say('저장할까요? “저장” 또는 “취소”라고 말씀하세요.', armTimer); }
+        if(!V.nag){ V.nag = 1; say('등록할까요? “네” 또는 “취소”라고 말씀하세요.', armTimer); }
         else { V.nag = 0; discardDraft(); say('저장하지 않고 닫았어요.', backToIdle); }
       }
     }, 10000);
   }
+  /* "평광 오후 3시 일정 등록할까요?" 형태. 오늘이면 날짜는 말하지 않는다 */
+  function spokenConfirm(){
+    const title = fTitle.value.trim() || '일정';
+    let t = '';
+    const v = fDate.value;
+    if(validDate(v)){
+      const [y, mo, d] = v.split('-').map(Number);
+      if(ymd(new Date(y, mo-1, d)) !== ymd(new Date())) t += mo + '월 ' + d + '일 ';
+    }
+    t += title;
+    if(fStart.value) t += ' ' + spokenTime(fStart.value);
+    if(fLoc.value.trim()) t += ', 장소는 ' + fLoc.value.trim() + ',';
+    return t + ' 일정 등록할까요?';
+  }
   function askConfirm(){
     V.state = 'confirm'; V.nag = 0; showState();
-    say(spokenEvent() + '. 맞나요? 맞으면 네, 아니면 수정이라고 말씀하세요.', armTimer);
+    say(spokenConfirm(), armTimer);
   }
 
   // 말한 내용을 지금 고치는 중인 일정에 반영 (제목·장소·날짜·시간). free=true면 나머지 말은 제목에 덧붙임
   const FIELDS = {제목:'title', 이름:'title', 일정명:'title', 장소:'loc', 위치:'loc', 시간:'time', 시각:'time', 날짜:'date'};
   const FIELD_LABEL = {title:'제목으로', loc:'장소로', time:'시간으로', date:'날짜로'};
   const CHG = '(?:변경|수정|바꿔|바꾸|바꿀|고쳐|옮겨|정정)';
-  const FIELD_ONLY = new RegExp('^(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:을|를|은|는)?' + CHG + '\S*$');
-  const FIELDISH = new RegExp('^(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:을|를|은|는)?\s*' + CHG);
+  const FIELD_ONLY = new RegExp('^(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:을|를|은|는)?' + CHG + '\\S*$');
+  const FIELDISH = new RegExp('^(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:을|를|은|는)?\\s*' + CHG);
   const fieldOnly = text => { const m = String(text).replace(/\s+/g, '').match(FIELD_ONLY); return m ? FIELDS[m[1]] : null; };
   function applyChanges(text, free, force){
     const t = String(text).trim().replace(/[.,!?]+$/, '');
-    const cleanV = v => String(v).replace(new RegExp('\s*(?:으로|로)?\s*' + CHG + '\S*\s*$'), '').replace(/\s*(?:해\s*줘|해주세요|해요|해)$/, '').replace(/(?:으로|로)$/, '').trim();
+    const cleanV = v => String(v).replace(new RegExp('\\s*(?:으로|로)?\\s*' + CHG + '\\S*\\s*$'), '').replace(/\s*(?:해\s*줘|해주세요|해요|해)$/, '').replace(/(?:으로|로)$/, '').trim();
     const isPlace = v => /(\d+호|\d+동|관|실|센터|홀|강당|캠퍼스|도서관|체육관|카페|병원|본관|별관|학교|대학교|학원|공원|회관|역|터미널)$/.test(String(v).trim().split(/\s+/).pop());
     const setTime = (p, src) => {
       let dur = 60;
@@ -1272,7 +1223,7 @@ function parseEvent(input, now, opts){
       return false;
     };
     if(force){ const ok = setField(force, t); if(ok) render(); return ok; }
-    let m = t.match(new RegExp('^(.+?)(?:으로|로)\s*(제목|이름|일정명|장소|위치|시간|시각|날짜)\s*' + CHG + '\S*$'));
+    let m = t.match(new RegExp('^(.+?)(?:으로|로)\\s*(제목|이름|일정명|장소|위치|시간|시각|날짜)\\s*' + CHG + '\\S*$'));
     if(m && setField(FIELDS[m[2]], m[1])){ render(); return true; }
     let changed = false;
     const fm = [...t.matchAll(/(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:은|는|을|를)?\s*/g)];
@@ -1289,7 +1240,7 @@ function parseEvent(input, now, opts){
     if(p.found.date){ fDate.value = ymd(p.date); changed = true; }
     if(p.found.time){ setTime(p, t); changed = true; }
     if(!changed){
-      const rm = t.match(new RegExp('^(.+?)(?:으로|로)?\s*' + CHG + '\S*(?:\s*(?:해\s*줘|해주세요|해요))?$'));
+      const rm = t.match(new RegExp('^(.+?)(?:으로|로)?\\s*' + CHG + '\\S*(?:\\s*(?:해\\s*줘|해주세요|해요))?$'));
       if(rm && rm[1].trim() && !/^(제목|이름|일정명|장소|위치|시간|시각|날짜)$/.test(rm[1].trim())){
         const v = cleanV(rm[1]); if(isPlace(v)) fLoc.value = v; else fTitle.value = v; changed = true;
       }
@@ -1565,7 +1516,7 @@ function parseEvent(input, now, opts){
 
   function vHandle(alts){
     if(V.state !== 'wake'){
-      const lead = new RegExp('^\s*(?:' + WAKE.source + ')[\s,.!?]*', 'i');
+      const lead = new RegExp('^\\s*(?:' + WAKE.source + ')[\\s,.!?]*', 'i');
       const had = alts.some(a => lead.test(a));
       alts = alts.map(a => a.replace(lead, '').trim()).filter(Boolean);
       if(!alts.length){
@@ -1697,7 +1648,15 @@ function parseEvent(input, now, opts){
       return;
     }
     if(cmd === 'no'){ discardDraft(); say('취소했어요.', backToIdle); return; }
-    if(cmd === 'yes'){ return; }
+    if(cmd === 'yes'){
+      const draftOk = validDate(fDate.value) && lastParsed && (lastParsed.found.date || lastParsed.found.time) && (V.partial || fTitle.value.trim());
+      if(draftOk){
+        clearTimeout(V.pTimer); V.partial = ''; V.pAsk = 0;
+        if(!fTitle.value.trim() || fTitle.value.trim() === '새 일정') fTitle.value = '약속';
+        render(); doSave();
+      }
+      return;
+    }
     if(cmd === 'del'){
       V.pend = 'del'; V.state = 'event'; showState();
       say('어떤 일정을 삭제할까요? 날짜나 제목을 말씀하세요. 방금 저장한 일정이면 방금 거라고 말하세요.');
@@ -1713,6 +1672,35 @@ function parseEvent(input, now, opts){
     handleEventText(text);
   }
 
+  /* 안드로이드 크롬은 "내일 12시"를 "내일", "내일 12시", "내일12시"처럼 겹쳐서 여러 번 돌려주므로 겹침을 걷어낸다 */
+  function dedupWords(t){
+    let w = String(t).replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+    /* 붙어서 반복: 평광3시평광3시평광3시 → 평광3시 (두 글자 이상 덩어리가 이어서 반복될 때만) */
+    w = w.map(x => { let prev; do{ prev = x; x = x.replace(/(.{2,}?)\1+/g, '$1'); }while(x !== prev); return x; });
+    /* 바로 앞 단어와 같으면 하나로: 내일 내일 12시 → 내일 12시 */
+    const o = [];
+    w.forEach(x => { if(!o.length || o[o.length-1] !== x) o.push(x); });
+    /* 여러 단어 묶음이 통째로 반복: 평광 3시 평광 3시 → 평광 3시 */
+    let n = o.length;
+    for(let k = 1; k <= Math.floor(n / 2); k++){
+      if(n % k) continue;
+      let same = true;
+      for(let i = k; i < n && same; i++) if(o[i] !== o[i % k]) same = false;
+      if(same) return o.slice(0, k).join(' ');
+    }
+    return o.join(' ');
+  }
+  function joinResults(e, from){
+    const out = [];
+    for(let i = from; i < e.results.length; i++){
+      const t = dedupWords(e.results[i][0].transcript || ''), n = norm(t);
+      if(!n) continue;
+      while(out.length && n.includes(norm(out[out.length-1]))) out.pop();
+      if(out.length && norm(out[out.length-1]).includes(n)) continue;
+      out.push(t);
+    }
+    return dedupWords(out.join(' '));
+  }
   function vListen(){
     if(!V.on || V.talking || V.fatal) return;
     if(document.visibilityState !== 'visible') return;
@@ -1722,7 +1710,7 @@ function parseEvent(input, now, opts){
       V.rec = r;
       let got = false;
       r.lang = 'ko-KR'; r.interimResults = true; r.continuous = true; r.maxAlternatives = 3;
-      V.done = 0; clearTimeout(V.timer);
+      let sd = 0; clearTimeout(V.timer);
       r.onstart = () => { V.recLive = true; V.fails = 0; setListening(true); showState(); };
       r.onresult = e => {
         if(r !== V.rec) return;
@@ -1737,37 +1725,48 @@ function parseEvent(input, now, opts){
           if(isEcho(tt, V.spoken)) return;
         }
         const idx = e.results.length - 1;
-        if(idx < V.done) return;
+        if(idx < sd) return;
         got = true;
         const res = e.results[idx];
         const total = e.results.length;
         let alts = [];
-        if(total - V.done === 1){ for(let i=0; i<res.length; i++) alts.push(res[i].transcript.trim()); }
-        else { let full = ''; for(let i=V.done; i<total; i++) full += ' ' + (e.results[i][0].transcript || ''); alts = [full.replace(/\s+/g, ' ').trim()]; }
+        if(total - sd === 1){ for(let i=0; i<res.length; i++) alts.push(dedupWords(res[i].transcript.trim())); }
+        else { alts = [joinResults(e, sd)]; }
         const text = alts[0] || '';
         if(!text) return;
         clearTimeout(V.cTimer);
         if(V.state === 'wake') setStatus('들린 말: ' + text + ' (“일정케어”를 기다리는 중)');
-        if(V.state === 'event'){
+        /* "일정케어"만 말한 경우: 입력칸을 채우지 않고 빨리 "네"라고 대답한다 */
+        const wakeOnly = new RegExp('^\\s*(?:' + WAKE.source + ')[\\s,.!?]*$', 'i').test(text);
+        if(V.state === 'event' && !wakeOnly && !cmdOf(text)){
           leaveSample(); ta.value = text; fromSentence();
           setStatus('듣는 중… ' + text);
         }
         clearTimeout(V.timer);
-        const fire = () => { if(V.talking || total <= V.done) return; V.done = total; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
+        const fire = () => { if(V.talking || total <= sd) return; sd = total; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
         const hasTime = /\d\s*시|[한두세네다여일아열]\S{0,3}\s*시|시\s*반|오전|오후|정오|저녁|아침|점심/.test(text);
-        const wait = V.state === 'wake' ? 700 : (res.isFinal ? (V.state === 'event' ? (hasTime ? 3000 : 3800) : ((cmdOf(text) === 'yes' || cmdOf(text) === 'no') ? 900 : 2200)) : 3000);
+        const isCmd = !!cmdOf(text);
+        const wait = res.isFinal
+          ? ((V.state === 'wake' || wakeOnly) ? 300 : (isCmd ? 450 : (V.state === 'event' ? (hasTime ? 1500 : 2600) : 1600)))
+          : ((V.state === 'wake' || wakeOnly) ? 700 : (V.state === 'event' ? 2600 : 1800));
         V.timer = setTimeout(fire, wait);
       };
       r.onerror = e => {
         const c = e.error;
-        if(c === 'not-allowed'){ V.fatal = true; vStop('마이크 권한이 막혀 있어요 (' + location.protocol + '). 주소창의 자물쇠에서 마이크를 허용하거나 https 주소로 열어야 해요.'); }
+        if(c === 'not-allowed'){
+          V.fatal = true;
+          let inFrame = false; try{ inFrame = window.self !== window.top; }catch(_){ inFrame = true; }
+          vStop(inFrame ? '이 미리보기 화면 안에서는 마이크가 막혀 있어요. 같은 파일을 크롬 주소창에서 직접 열어 주세요 (https 주소).' : '마이크 권한이 막혀 있어요 (' + location.protocol + '). 주소창의 자물쇠에서 마이크를 허용하거나 https 주소로 열어야 해요.');
+        }
         else if(c === 'service-not-allowed'){ V.fatal = true; vStop('이 브라우저는 음성 인식 서비스를 쓸 수 없어요. 크롬으로 열어 보세요.'); }
         else if(c === 'audio-capture'){ V.fatal = true; vStop('마이크를 찾을 수 없어요.'); }
+        else if(c !== 'no-speech' && c !== 'aborted' && c !== 'network') setStatus('음성 인식 오류: ' + c, true);
         else if(c === 'network'){ V.fails++; if(V.fails >= 3){ V.fatal = true; vStop('음성 인식 서버에 연결하지 못했어요. 인터넷을 확인해 주세요.'); } }
       };
       r.onend = () => {
         if(r !== V.rec) return;
         V.recLive = false;
+        if(V.endWait){ try{ V.endWait(); }catch(_){} }
         if(!V.on || V.talking || V.fatal) return;
         if(got) V.idle = 0;
         else if(V.state !== 'wake'){
@@ -1815,59 +1814,6 @@ function parseEvent(input, now, opts){
     if(msg) fallback(msg); else setStatus('눌러서 말하기');
   }
 
-  async function runDiag(){
-    if(V.on) vStop();
-    const out = $('diag-out');
-    out.hidden = false;
-    const L = [];
-    const push = t => { L.push(t); out.textContent = L.join('
-'); };
-    push('버전: 1110-O');
-    push('주소: ' + location.href.slice(0, 90));
-    push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
-    push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
-    push('브라우저: ' + navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 100));
-    try{
-      const st = await navigator.permissions.query({name:'microphone'});
-      push('마이크 권한 상태: ' + st.state);
-    }catch(e){ push('마이크 권한 상태: 확인 불가'); }
-    try{
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) push('마이크 접근 시험: 지원 안 함');
-      else {
-        const st = await navigator.mediaDevices.getUserMedia({audio:true});
-        st.getTracks().forEach(t => t.stop());
-        push('마이크 접근 시험: 성공');
-      }
-    }catch(e){ push('마이크 접근 시험: 실패 (' + (e && e.name) + ')'); }
-    try{
-      push('소리 시험: “소리 시험입니다”가 들리는지 확인하세요');
-      const vs = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-      push('음성 목록: 전체 ' + vs.length + '개, 한국어 ' + vs.filter(v => /^ko/i.test(v.lang)).length + '개');
-      chime(2);
-      await new Promise(res => {
-        let st = false; const u = new SpeechSynthesisUtterance('소리 시험입니다'); u.lang = 'ko-KR';
-        u.onstart = () => { st = true; }; u.onend = () => { push('음성 재생: ' + (st ? '시작됨' : '시작 안 됨')); res(); }; u.onerror = e => { push('음성 재생 오류: ' + (e && e.error)); res(); };
-        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); setTimeout(() => { if(!st) push('음성 재생: 3초 안에 시작 안 됨 (미디어 볼륨/삼성 음성 설정 확인)'); res(); }, 3000);
-      });
-    }catch(e){ push('소리 시험 실패: ' + e); }
-    if(!SR){ push('점검 끝. 이 화면을 캡처해서 보내 주세요.'); return; }
-    push('음성 인식 시험: “안녕하세요”라고 말해 보세요 (8초)');
-    await new Promise(res => {
-      const r = new SR();
-      r.lang = 'ko-KR'; r.interimResults = false; r.continuous = false;
-      const t0 = Date.now();
-      const ev = n => push('  ' + ((Date.now() - t0) / 1000).toFixed(1) + '초 ' + n);
-      let tm = null;
-      ['start', 'audiostart', 'soundstart', 'speechstart', 'speechend', 'soundend', 'audioend', 'nomatch'].forEach(n => r.addEventListener(n, () => ev(n)));
-      r.onresult = e => ev('결과: ' + e.results[e.results.length - 1][0].transcript);
-      r.onerror = e => ev('오류: ' + e.error);
-      r.onend = () => { ev('end'); clearTimeout(tm); res(); };
-      tm = setTimeout(() => { try{ r.abort(); }catch(e){} ev('시간 초과'); res(); }, 8000);
-      try{ r.start(); }catch(e){ ev('start 실패: ' + (e && e.name)); clearTimeout(tm); res(); }
-    });
-    push('점검 끝. 이 화면을 캡처해서 보내 주세요.');
-  }
-  $('diag').addEventListener('click', runDiag);
 
   mic.addEventListener('click', () => { if(V.on) vStop(); else vStart('event'); });
   wakeSw.addEventListener('change', () => { if(wakeSw.checked) vStart('wake'); else vStop(); });
@@ -1875,97 +1821,100 @@ function parseEvent(input, now, opts){
     if(document.visibilityState === 'visible' && V.on){ lockOn(); vListen(); }
   });
 
-  /* ---------- 스플래시 화면 수정 ---------- */
+  /* ---------- 시작 화면 ---------- */
   (function(){
     const sp = $('splash'); if(!sp) return;
-    
-    // 로고와 애니메이션 요소들
-    const logoSvg = $('splash-logo-svg');
     const chs = Array.from(sp.querySelectorAll('.ch'));
-    const title = $('splash-title');
-    
-    // 애니메이션 설정
-    const PERIOD = 2200; // 원형 도는 전체 시간
-    const RADIUS = 60; // 도는 반지름
-    
-    // 글자들 원형으로 돌기
+    const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+    const fromApp = /[?&]src=app/.test(location.search);
+    const slow = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const R = 58, RY = 10, PERIOD = slow ? 9000 : 2800;
+    let closed = false, raf = 0;
     const t0 = performance.now();
-    let raf;
-    let circleDone = false;
-    
-    function animate(now) {
-      if(circleDone) return;
-      
-      const elapsed = now - t0;
-      let prog = Math.min(elapsed / PERIOD, 1);
-      
-      // Easing (easeOutCubic)
-      const e = 1 - Math.pow(1 - prog, 3);
-      
-      // 4글자가 0도부터 -360도까지 돌기
-      const baseAngle = -e * Math.PI * 2;
-      
-      chs.forEach((ch, i) => {
-        // 각 글자 간격 유지
-        const angle = baseAngle - (i * 0.5); 
-        
-        // 회전 중에는 원을 따라 이동, 끝날 무렵 중심으로 수렴
-        const r = RADIUS * (1 - e); 
-        
-        const x = Math.sin(angle) * r;
-        const y = -Math.cos(angle) * r;
-        
-        // 투명도
-        const op = Math.min(e * 2, 1);
-        
-        ch.style.opacity = op.toFixed(2);
-        ch.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${1 - 0.2*e})`;
+    let lapDone = false, lapT0 = 0, settleT0 = 0;
+    const LAP = slow ? 9000 : 3800;
+    function frame(now){
+      if(closed) return;
+      /* 터치 전에는 계속 돌고, 터치하면 안내 음성과 함께 정확히 한 바퀴만 돈다 */
+      let prog;
+      if(!lapT0){ prog = ((now - t0) / PERIOD) % 1; }
+      else { prog = Math.min(1, (now - lapT0) / LAP); if(prog >= 1 && !lapDone){ lapDone = true; settleT0 = now; } }
+      const SETTLE = 500, HOLD = 900;
+      const k = lapDone ? Math.min(1, (now - settleT0) / SETTLE) : 0;
+      const e = k * k * (3 - 2 * k);
+      const base = -prog * Math.PI * 2;
+      chs.forEach((c, i) => {
+        const a = base - i * 0.47;
+        const x0 = Math.sin(a) * R, y0 = -Math.cos(a) * RY;
+        const d = (1 - Math.cos(a)) / 2;
+        const sc0 = 0.78 + 0.32 * d, op0 = 0.12 + 0.88 * d * d * d;
+        /* 한 바퀴를 돈 뒤에는 글자가 화면 정중앙에 "일정케어"로 가지런히 모인다 */
+        const x = x0 + ((i - 1.5) * 34 - x0) * e, y = y0 * (1 - e);
+        const sc = sc0 + (1.12 - sc0) * e, op = op0 + (1 - op0) * e;
+        c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')';
+        c.style.opacity = op.toFixed(2);
+        c.style.zIndex = String(Math.round(d * 10));
       });
-      
-      if (prog >= 1) {
-        circleDone = true;
-        // 회전이 끝난 후 글자 숨기고 메인 로고/타이틀 표시
-        chs.forEach(ch => ch.style.opacity = '0');
-        logoSvg.style.opacity = '1';
-        title.style.opacity = '1';
-        
-        // 아나운서 톤 멘트 출력 후 넘어가기
-        speakAnnouncerTone();
-        return;
-      }
-      raf = requestAnimationFrame(animate);
+      if(lapDone && now - settleT0 >= SETTLE + HOLD){ gate(); return; }
+      raf = requestAnimationFrame(frame);
     }
-    
-    // 사용자 터치 잠금 해제 체크용
-    const act = () => { try{ return navigator.userActivation && navigator.userActivation.hasBeenActive; }catch(_){ return false; } };
-    
-    function speakAnnouncerTone() {
-      const text = "일정케어가 일정 등록을 도와드립니다.";
-      
-      const doSpeak = () => {
-         // say(text, afterCallback, asAnnouncerTone)
-         say(text, () => {
-             // 멘트 끝나면 홈 화면으로 전환
-             sp.classList.add('done');
-             setTimeout(() => sp.remove(), 300);
-             if(SR){ setTimeout(() => { try{ if(!V.on) vStart('event'); }catch(e){} }, 300); }
-         }, true);
-      };
-      
-      if(act()) {
-          doSpeak();
-      } else {
-          // 사용자 인터랙션이 없으면 대기 (터치 시 스플래시 종료 및 음성 시작)
-          document.addEventListener('pointerdown', doSpeak, {once:true, capture:true});
-          // 시각적으로 터치를 유도하기 위해 잠시 대기
-          setTimeout(() => {
-             // 혹시라도 터치 없이 진행된다면(데스크탑 환경 등) 시도해봄
-             if(document.body.contains(sp)) doSpeak();
-          }, 4000);
-      }
+    let isLoaded = false, gated = false;
+    /* 소개 멘트 + 잔잔한 배경음 (한 번만) */
+    let introStarted = false, introRes = null;
+    const introDone = new Promise(r => { introRes = r; });
+    function music(){
+      try{
+        const AC = window.AudioContext || window.webkitAudioContext; const ac = new AC(); if(ac.state === 'suspended') ac.resume();
+        const t = ac.currentTime, master = ac.createGain(), lp = ac.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 1400; master.connect(lp); lp.connect(ac.destination);
+        master.gain.setValueAtTime(0.0001, t); master.gain.exponentialRampToValueAtTime(0.07, t + 1.2); master.gain.setValueAtTime(0.07, t + 4.2); master.gain.exponentialRampToValueAtTime(0.0001, t + 6);
+        [130.81, 196.0, 261.63, 329.63, 493.88].forEach((f, i) => {
+          const o = ac.createOscillator(), g = ac.createGain(); o.type = i % 2 ? 'triangle' : 'sine'; o.frequency.value = f; g.gain.value = 0.18; o.connect(g); g.connect(master); o.start(t); o.stop(t + 6.2);
+        });
+        [659.25, 783.99, 987.77, 783.99].forEach((f, i) => {
+          const o = ac.createOscillator(), g = ac.createGain(), st = t + 0.8 + i * 0.9; o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(master);
+          g.gain.setValueAtTime(0.0001, st); g.gain.exponentialRampToValueAtTime(0.22, st + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, st + 1.6); o.start(st); o.stop(st + 1.7);
+        });
+        setTimeout(() => { try{ ac.close(); }catch(_){} }, 6500);
+      }catch(_){}
     }
-    
-    requestAnimationFrame(animate);
+    const text = '일정케어가 당신의 일정을 도와드립니다.';
+    let started = false, finished = false;
+    const end = () => { if(finished) return; finished = true; introRes(); };
+    function startLap(){ if(!lapT0) lapT0 = performance.now(); }
+    const speak = (withVoice) => {
+      try{
+        introStarted = true;
+        const u = new SpeechSynthesisUtterance(text); u.lang = 'ko-KR'; u.rate = 0.92; u.pitch = 1.05;
+        if(withVoice){ try{ const vs = speechSynthesis.getVoices().filter(v => /^ko/i.test(v.lang)); const f = vs.find(v => /female|yuna|sun-?hi|heami|seoyeon|여성/i.test(v.name)) || vs[0]; if(f) u.voice = f; }catch(_){} }
+        u.onstart = () => { if(started) return; started = true; music(); startLap(); };
+        u.onend = () => { if(started) end(); };
+        u.onerror = () => { if(started) end(); }; /* 막혔을 때(not-allowed)는 끝내지 않고 터치를 기다린다 */
+        speechSynthesis.cancel(); try{ speechSynthesis.resume(); }catch(_){}
+        setTimeout(() => { try{ speechSynthesis.speak(u); }catch(_){} }, 250);
+      }catch(_){}
+    };
+    /* 앱을 열고 1초 뒤 바로 말한다. 브라우저가 터치 없이는 막는 폰이면, 문구 없이 글자만 돌다가
+       화면을 처음 만지는 순간 말하고, 끝내 안 만지면 6.5초 뒤 소리 없이 한 바퀴 돌고 홈으로 간다 */
+    setTimeout(() => { if(!started) speak(false); }, 1000);
+    setTimeout(() => { if(!started) speak(true); }, 2800);
+    const onTouch = () => { if(!started && !finished) speak(false); };
+    document.addEventListener('pointerdown', onTouch, {capture:true});
+    document.addEventListener('keydown', onTouch, {capture:true});
+    setTimeout(() => { if(!started){ startLap(); end(); } }, 6500);
+    setTimeout(() => { if(started && !finished) end(); }, 12000); /* 소리가 끝났다는 신호가 안 오는 폰 대비 */
+    setTimeout(close, 15000);
+    function gate(){ if(gated) return; gated = true; Promise.all([loaded, fonts, introStarted ? introDone : Promise.resolve()]).then(close); }
+    frame(performance.now());
+    function close(){
+      if(closed) return; closed = true;
+      cancelAnimationFrame(raf);
+      sp.classList.add('done');
+      setTimeout(() => { try{ sp.remove(); }catch(e){} }, 250);
+      if(SR){ setTimeout(() => { try{ if(!V.on) vStart('event'); }catch(e){} }, 300); }
+    }
+    const loaded = new Promise(res => { if(document.readyState === 'complete') res(); else window.addEventListener('load', res, {once:true}); });
+    const fonts = (document.fonts && document.fonts.ready) ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]) : Promise.resolve();
   })();
 
   /* ---------- 시작 ---------- */
@@ -1987,18 +1936,6 @@ function parseEvent(input, now, opts){
   const GAS_KEY = 'ilcare.gas';
   const gasGet = () => { try{ return localStorage.getItem(GAS_KEY) || ''; }catch(_){ return ''; } };
   const gasSet = v => { try{ if(v) localStorage.setItem(GAS_KEY, v); else localStorage.removeItem(GAS_KEY); }catch(_){} };
-  const gasMsg = (t, err) => { const m = $('gas-msg'); m.textContent = t; m.style.color = err ? 'var(--err, #C62828)' : ''; };
-  $('gcal-link').addEventListener('click', () => { const b = $('gcal-box'); b.hidden = !b.hidden; $('gas-url').value = gasGet(); gasMsg(gasGet() ? '연결돼 있어요.' : ''); });
-  $('gas-ok').addEventListener('click', async () => {
-    const url = $('gas-url').value.trim();
-    if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\s]+\/exec/.test(url)){ gasMsg('script.google.com으로 시작하고 /exec로 끝나는 주소를 붙여넣어 주세요.', true); return; }
-    gasMsg('연결을 확인하는 중이에요.');
-    try{
-      const g = makeGas(url); await g.callTool('', 'ping', {});
-      gasSet(url); mcp = g; mcpOn(); applyMode(); gasMsg('연결됐어요. 이제 저장하면 구글 캘린더에 들어가요.'); refreshList();
-    }catch(e){ gasMsg(errText(e), true); }
-  });
-  $('gas-off').addEventListener('click', () => { gasSet(''); $('gas-url').value = ''; mcpOff(); applyMode(); loadLocal(); gasMsg('연결을 해제했어요.'); });
   function mcpOff(){
     mcp = null;
     $('saved-h').textContent = '저장한 녹음';
@@ -2012,8 +1949,6 @@ function parseEvent(input, now, opts){
     let m = null;
     try{ m = window.claude ? await window.claude.use('mcp') : null; }catch(e){ m = null; }
     if(!m){
-      const gu = gasGet();
-      if(gu){ mcp = makeGas(gu); mcpOn(); applyMode(); refreshList(); return; }
       mcpOff(); applyMode(); loadLocal(); return;
     }
     mcp = m;
