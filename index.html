@@ -4,2025 +4,380 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2457F5">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-512.png">
-<link rel="icon" href="icon-192.png">
 <title>일정케어</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap"></noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
-/* Layout: one narrow column. Mic, recognized sentence, editor card, then the list of events saved by this app, so it reads speak → check → saved. */
 :root{
-  --bg:#F3F5F8;
-  --surface:#FFFFFF;
-  --ink:#12161C;
-  --muted:#667080;
-  --line:#E1E5EB;
-  --accent:#2457F5;
-  --accent-ink:#FFFFFF;
-  --accent-soft:#E6ECFE;
-  --warn:#B4531A;
-  --danger:#C23B22;
-  --danger-soft:#FBE9E5;
-  --font-body:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --font-mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#12161C; --muted:#667080;
+  --line:#E1E5EB; --accent:#2457F5; --accent-ink:#FFFFFF; --accent-soft:#E6ECFE;
+  --danger:#C23B22; --danger-soft:#FBE9E5;
+  --font-body:"Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --font-mono:"DM Mono",monospace;
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0D1015;
-    --surface:#161A21;
-    --ink:#EDF0F5;
-    --muted:#8A93A1;
-    --line:#262C36;
-    --accent:#6F90FF;
-    --accent-ink:#0B1020;
-    --accent-soft:#1B2547;
-    --warn:#E0905A;
-    --danger:#F0856F;
-    --danger-soft:#3A1E19;
-    color-scheme:dark;
+  :root{
+    --bg:#0D1015; --surface:#161A21; --ink:#EDF0F5; --muted:#8A93A1;
+    --line:#262C36; --accent:#6F90FF; --accent-ink:#0B1020; --accent-soft:#1B2547;
+    --danger:#F0856F; --danger-soft:#3A1E19; color-scheme:dark;
   }
 }
-:root[data-theme="dark"]{
-  --bg:#0D1015;
-  --surface:#161A21;
-  --ink:#EDF0F5;
-  --muted:#8A93A1;
-  --line:#262C36;
-  --accent:#6F90FF;
-  --accent-ink:#0B1020;
-  --accent-soft:#1B2547;
-  --warn:#E0905A;
-  --danger:#F0856F;
-  --danger-soft:#3A1E19;
-  color-scheme:dark;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;padding:20px 16px 80px}
+.app{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.mono{font-family:var(--font-mono)}
 
-*{box-sizing:border-box}
-body{
-  background:var(--bg);
-  color:var(--ink);
-  font-family:var(--font-body);
-  font-size:15px;
-  line-height:1.55;
-  padding-block:24px 96px;
-  padding-left:max(16px, env(safe-area-inset-left, 0px));
-  padding-right:max(16px, env(safe-area-inset-right, 0px));
-}
-.app{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
-.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.top{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.brand{font-weight:700;font-size:18px;color:var(--accent)}
+.top time{font-size:13px;color:var(--muted)}
 
-.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.brand{font-weight:700;font-size:15px;letter-spacing:-.01em;display:inline-flex;align-items:center;gap:7px}
-.brand svg{width:22px;height:22px;flex:none;color:var(--accent)}
-.top time{font-size:12px;color:var(--muted)}
-
-.speak{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
-.speak h1{margin:0;font-size:26px;line-height:1.3;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
-.lead{margin:0 0 14px;color:var(--muted);max-width:30ch;text-wrap:balance;word-break:keep-all}
+.speak{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;background:var(--surface);padding:20px;border-radius:18px;border:1px solid var(--line)}
+.speak h1{font-size:22px;font-weight:700}
+.lead{font-size:14px;color:var(--muted)}
 
 .mic{
-  position:relative;width:96px;height:96px;border-radius:50%;border:0;
-  background:var(--accent);color:var(--accent-ink);
-  display:grid;place-items:center;cursor:pointer;
-  box-shadow:0 10px 28px color-mix(in srgb,var(--accent) 32%,transparent);
+  position:relative;width:80px;height:80px;border-radius:50%;border:0;
+  background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;
+  cursor:pointer;box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 30%,transparent);
   transition:transform .15s ease;
 }
-.mic:active{transform:scale(.96)}
-.mic svg{width:34px;height:34px}
-.ring{position:absolute;inset:-10px;border-radius:50%;border:2px solid var(--accent);opacity:0;pointer-events:none}
+.mic:active{transform:scale(.95)}
+.mic svg{width:36px;height:36px}
+.ring{position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--accent);opacity:0;pointer-events:none}
 .mic.on .ring{animation:pulse 1.4s ease-out infinite}
-@keyframes pulse{0%{transform:scale(.88);opacity:.55}100%{transform:scale(1.35);opacity:0}}
-@media (prefers-reduced-motion:reduce){
-  .mic{transition:none}
-  .mic.on .ring{animation:none;opacity:.5}
+@keyframes pulse{0%{transform:scale(.9);opacity:.6}100%{transform:scale(1.3);opacity:0}}
+
+.status{font-size:14px;font-weight:500;color:var(--accent);min-height:1.5em}
+.hint{font-size:12px;color:var(--muted);line-height:1.4}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.card.editing{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.card-head{display:flex;justify-content:space-between;align-items:center}
+.lab{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:0.05em}
+.field{display:flex;flex-direction:column;gap:4px}
+input[type="text"],input[type="date"],input[type="time"]{
+  width:100%;font-family:inherit;font-size:15px;color:var(--ink);
+  background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
 }
-.status{margin:6px 0 0;min-height:2.9em;font-size:13px;color:var(--muted);max-width:32ch;text-wrap:balance}
-.status.warn{color:var(--warn)}
-.hint{margin:0;font-size:12.5px;color:var(--muted);max-width:34ch;text-wrap:balance}
-.diag{margin:0;width:100%;overflow-x:auto;white-space:pre-wrap;word-break:break-all;text-align:left;font-family:var(--font-mono);font-size:12px;line-height:1.6;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
-
-.auto{display:inline-flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink);cursor:pointer;min-height:36px}
-.auto input{position:absolute;opacity:0;width:1px;height:1px}
-.sw{position:relative;width:40px;height:24px;border-radius:99px;background:var(--line);transition:background .15s ease;flex:none}
-.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 25%,transparent);transition:transform .15s ease}
-.auto input:checked + .sw{background:var(--accent)}
-.auto input:checked + .sw::after{transform:translateX(16px);background:var(--accent-ink)}
-.auto input:focus-visible + .sw{outline:2px solid var(--accent);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){.sw,.sw::after{transition:none}}
-
-.lab{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.tag{font-family:var(--font-body);font-size:11px;letter-spacing:0;text-transform:none;font-weight:500;padding:1px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
-.lab-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.link{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px 0}
-.link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-.said{display:flex;flex-direction:column;gap:6px}
-textarea,input[type="text"],input[type="date"],input[type="time"]{
-  width:100%;min-width:0;font-family:var(--font-body);font-size:16px;color:var(--ink);
-  background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
-}
-textarea{resize:vertical;line-height:1.5}
-textarea:focus-visible,input:focus-visible,.btn:focus-visible,.mic:focus-visible,.mini:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-.card{
-  background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;
-  display:flex;flex-direction:column;gap:16px;scroll-margin-top:16px;
-  box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 6%,transparent);
-}
-.card.editing{border-color:var(--accent)}
-.card-head{display:flex;flex-direction:column;gap:6px}
-.summary{margin:0;font-size:13px;color:var(--accent);min-height:1.6em}
-.field{display:flex;flex-direction:column;gap:6px;min-width:0}
-.card input[type="text"],.card input[type="date"],.card input[type="time"]{background:var(--bg);height:46px;padding-block:0}
-.field.title input{font-size:18px;font-weight:700;letter-spacing:-.01em}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid .wide{grid-column:1 / -1}
-input[type="date"],input[type="time"]{font-family:var(--font-mono);font-size:15px}
-.maps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.actions{display:flex;flex-direction:column;gap:10px}
 
+.actions{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .btn{
-  display:flex;align-items:center;justify-content:center;width:100%;height:50px;border-radius:12px;
-  font-family:var(--font-body);font-size:16px;font-weight:700;text-decoration:none;cursor:pointer;border:0;
+  display:flex;align-items:center;justify-content:center;width:100%;height:46px;border-radius:10px;
+  font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;border:0;text-decoration:none;
 }
 .btn.primary{background:var(--accent);color:var(--accent-ink)}
-.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500;height:44px}
-.btn.danger{background:var(--danger-soft);color:var(--danger);height:44px}
-.btn.map{height:44px;font-size:14px;padding-left:4px;padding-right:4px}
-.btn[disabled],.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
-.note{margin:0;font-size:12.5px;color:var(--muted);text-wrap:pretty}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:var(--danger-soft);color:var(--danger)}
 
-.saved{display:flex;flex-direction:column;gap:12px}
-.saved-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.list{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
-.row{
-  background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;
-  display:flex;flex-direction:column;gap:10px;
-}
-.row.on{border-color:var(--accent)}
-.row-main{display:flex;flex-direction:column;gap:2px;min-width:0}
-.row-title{font-weight:700;font-size:16px;letter-spacing:-.01em;overflow-wrap:anywhere}
-.row-meta{font-size:12.5px;color:var(--muted)}
-.row-loc{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
-.row-acts{display:flex;flex-wrap:wrap;gap:8px}
-.mini{
-  height:36px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);
-  font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;
-}
-.mini.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
-a.mini{display:inline-flex;align-items:center;text-decoration:none}
-.mini.confirm{background:var(--danger);color:var(--surface);border-color:var(--danger);font-weight:700}
-.empty{margin:0;padding:18px 16px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:14px;text-wrap:pretty}
-.empty.err{color:var(--warn);border-color:var(--warn)}
+.saved{display:flex;flex-direction:column;gap:10px}
+.list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.row{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.row-title{font-weight:700;font-size:16px}
+.row-meta{font-size:13px;color:var(--muted)}
+.row-acts{display:flex;gap:6px;margin-top:4px}
+.mini{padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:transparent;font-size:13px;cursor:pointer;color:var(--ink);text-decoration:none}
+.mini.danger{color:var(--danger);border-color:var(--danger)}
 
-.toast{
-  position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;z-index:20;
-  padding-top:12px;padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));
-  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
-}
-.toast span{
-  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;font-weight:500;max-width:440px;text-align:center;
-  opacity:0;transform:translateY(8px);transition:opacity .2s ease,transform .2s ease;
-}
-.toast.show span{opacity:1;transform:none}
-.toast.bad span{background:var(--danger);color:var(--surface)}
-@media (prefers-reduced-motion:reduce){.toast span{transition:none}}
-
-/* 애니메이션 및 스플래시 */
-#splash{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#FFFFFF;}
-#splash.done{opacity:0;visibility:hidden;transition:opacity .3s linear,visibility .3s}
-
-#splash-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  position: relative;
-}
-
-#splash-logo-wrap {
-  position: relative;
-  width: 60px;
-  height: 60px;
-}
-
-#splash-logo-svg {
-  width: 100%;
-  height: 100%;
-}
-
-.ch {
-  position: absolute;
-  font-size: 20px;
-  font-weight: 700;
-  color: #2457F5;
-  opacity: 0;
-  transform: translate(-50%, -50%);
-  left: 50%;
-  top: 50%;
-  transition: opacity 0.3s ease;
-}
-
-#splash-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #2457F5;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.row.hit{box-shadow:0 0 0 2px var(--accent) inset}
-.maplink{margin-left:6px;color:var(--accent);font-size:12px;text-decoration:none;border-bottom:1px solid currentColor}
-.addbar{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.addbar[hidden]{display:none}
-#gcal-box{flex-direction:column;gap:8px;width:100%}
-#gcal-box:not([hidden]){display:flex}
-.addbar-t{font-size:13px;color:var(--muted)}
-.addbar-b{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+#splash{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FFF;color:#2457F5;gap:16px;cursor:pointer}
+#splash.done{opacity:0;pointer-events:none;transition:opacity .3s ease}
+#splash h2{font-size:28px;font-weight:700}
 </style>
-<style>:root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 
-<div id="splash" role="img" aria-label="일정케어 로딩 화면">
-  <div id="splash-container">
-    <div id="splash-logo-wrap">
-      <!-- 중앙 로고 (최종 정착 위치) -->
-      <svg id="splash-logo-svg" viewBox="0 0 72 72" aria-hidden="true" style="opacity:0; transition: opacity 0.3s ease">
-        <defs><clipPath id="Lh2"><rect width="36" height="72"/></clipPath><clipPath id="Rh2"><rect x="36" width="36" height="72"/></clipPath></defs>
-        <g fill="none" style="stroke:#2457F5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
-          <g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g>
-        </g>
-        <g clip-path="url(#Rh2)">
-          <g fill="none" style="stroke:#FFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-          <g fill="none" style="stroke:#2457F5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-        </g>
-        <g clip-path="url(#Lh2)">
-          <g fill="none" style="stroke:#2457F5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-        </g>
-        <g clip-path="url(#Lh2)">
-          <g fill="none" style="stroke:#FFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-          <g fill="none" style="stroke:#2457F5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g>
-        </g>
-      </svg>
-      <!-- 회전하는 글자들 -->
-      <span class="ch" id="ch-1">일</span>
-      <span class="ch" id="ch-2">정</span>
-      <span class="ch" id="ch-3">케</span>
-      <span class="ch" id="ch-4">어</span>
-    </div>
-    <div id="splash-title">일정케어</div>
-  </div>
+<div id="splash">
+  <h2>일정케어</h2>
+  <p>화면을 터치하면 안내 음성이 시작됩니다</p>
 </div>
 
 <main class="app">
   <header class="top">
-    <span class="brand">
-      <svg viewBox="0 0 72 72" aria-hidden="true"><defs><clipPath id="Lh"><rect width="36" height="72"/></clipPath><clipPath id="Rh"><rect x="36" width="36" height="72"/></clipPath></defs><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g clip-path="url(#Rh)"><g fill="none" style="stroke:var(--bg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Lh)"><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Lh)"><g fill="none" style="stroke:var(--bg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g></svg>
-      일정케어
-    </span>
+    <span class="brand">일정케어</span>
     <time id="today" class="mono"></time>
   </header>
 
-  <section class="speak" aria-labelledby="speak-h">
-    <h1 id="speak-h">일정을 말하면 알려드려요</h1>
-    <p class="lead">날짜, 장소, 일정, 시간을 한 문장으로 말해 주세요.</p>
-    <button id="mic" class="mic" type="button" aria-pressed="false" aria-label="말하기 시작">
-      <span class="gr"></span>
-      <svg id="ic-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
-      <svg id="ic-stop" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>
+  <section class="speak">
+    <h1>일정을 말로 등록하세요</h1>
+    <p class="lead">"12시 평광 친구약속"처럼 말씀해 보세요</p>
+    <button id="mic" class="mic" type="button" aria-label="음성인식 시작">
+      <div class="ring"></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
     </button>
-    <p id="status" class="status" role="status" aria-live="polite">눌러서 말하기</p>
-    <div id="addbar" class="addbar" hidden>
-      <span class="addbar-t">방금 저장한 일정을 캘린더에 넣어 주세요</span>
-      <div class="addbar-b">
-        <a id="ab-sam" class="btn ghost" hidden>삼성 캘린더</a>
-        <a id="ab-g" class="btn ghost" target="_blank" rel="noopener">Google 캘린더</a>
-      </div>
-    </div>
-    <button id="kb" class="link" type="button" hidden>키보드의 마이크로 말하기</button>
-    <input id="wake" type="checkbox" hidden>
-    <input id="auto" type="checkbox" hidden>
-    <input id="barge" type="checkbox" hidden>
-    <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-O · 삭제·수정·브리핑 말하기 지원</p>
-    <button id="diag" class="link" type="button">마이크 점검</button>
-    <button id="gcal-link" class="link" type="button">구글 캘린더 연결</button>
-    <div id="gcal-box" hidden>
-      <input id="gas-url" type="url" inputmode="url" autocomplete="off" placeholder="웹 앱 주소를 붙여넣으세요" style="font:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);width:100%">
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="gas-ok" class="btn" type="button">연결</button><button id="gas-off" class="btn ghost" type="button">연결 해제</button></div>
-      <p id="gas-msg" class="hint" style="margin:0"></p>
-    </div>
-    <pre id="diag-out" class="diag" hidden></pre>
+    <p id="status" class="status">버튼을 눌러 음성 입력을 시작하세요</p>
+    <p class="hint">말씀 후 "저장", "수정", "취소", "삭제" 명령어로 조작할 수 있습니다.</p>
   </section>
 
-  <section class="said">
-    <div class="lab-row">
-      <label for="said" class="lab">인식된 문장 <span id="sampleTag" class="tag" hidden>예시</span></label>
-      <button id="b-wipe" class="link" type="button">녹음 지우기</button>
-    </div>
-    <textarea id="said" rows="2" spellcheck="false" autocomplete="off"></textarea>
-    <p class="note">마이크 버튼이 안 되면 이 입력창을 누르고 키보드의 마이크로 말하세요.</p>
-  </section>
-
-  <section id="card" class="card" aria-labelledby="card-h">
+  <section id="card" class="card">
     <div class="card-head">
-      <h2 id="card-h" class="lab">새 일정</h2>
-      <p id="summary" class="summary mono" aria-live="polite"></p>
+      <span id="card-h" class="lab">새 일정 입력</span>
     </div>
-    <label class="field title"><span class="lab">제목</span><input id="f-title" type="text" autocomplete="off"></label>
+    <label class="field"><span class="lab">일정 제목</span><input id="f-title" type="text" placeholder="예: 친구약속"></label>
     <div class="grid">
       <label class="field wide"><span class="lab">날짜</span><input id="f-date" type="date"></label>
-      <label class="field"><span class="lab">시작</span><input id="f-start" type="time"></label>
-      <label class="field"><span class="lab">종료</span><input id="f-end" type="time"></label>
+      <label class="field"><span class="lab">시작 시간</span><input id="f-start" type="time"></label>
+      <label class="field"><span class="lab">종료 시간</span><input id="f-end" type="time"></label>
     </div>
-    <label class="field"><span class="lab">장소</span><input id="f-loc" type="text" autocomplete="off"></label>
-    <div class="maps">
-      <a id="nmap" class="btn ghost map" target="_blank" rel="noopener" aria-disabled="true">네이버지도</a>
-      <a id="kmap" class="btn ghost map" target="_blank" rel="noopener" aria-disabled="true">카카오맵</a>
-      <a id="gmap" class="btn ghost map" target="_blank" rel="noopener" aria-disabled="true">구글지도</a>
-    </div>
+    <label class="field"><span class="lab">장소</span><input id="f-loc" type="text" placeholder="예: 평광"></label>
+    
     <div class="actions">
-      <button id="b-save" class="btn primary" type="button">캘린더에 저장</button>
-      <a id="go" class="btn ghost" target="_blank" rel="noopener" aria-disabled="true" hidden>Google 캘린더로 열기</a>
-      <button id="b-update" class="btn primary" type="button" hidden>수정 저장</button>
+      <button id="b-save" class="btn primary" type="button">일정 저장하기</button>
+      <button id="b-cancel" class="btn ghost" type="button" hidden>취소</button>
       <button id="b-delete" class="btn danger" type="button" hidden>삭제</button>
-      <button id="b-cancel" class="btn ghost" type="button" hidden>수정 취소</button>
     </div>
-    <p id="note" class="note">시간을 말하지 않으면 종일 일정으로 저장돼요. 지도 버튼은 장소를 검색해 열어 주니, 지도 앱에서 길찾기를 누르세요. 호수는 검색에서 빼요.</p>
   </section>
 
-  <section class="saved" aria-labelledby="saved-h">
-    <div class="saved-head">
-      <h2 id="saved-h" class="lab">저장된 일정</h2>
-      <button id="b-refresh" class="link" type="button">새로고침</button>
-    </div>
+  <section class="saved">
+    <span class="lab">저장된 일정</span>
     <ul id="list" class="list"></ul>
-    <p id="list-msg" class="empty" role="status">불러오는 중이에요.</p>
   </section>
 </main>
 
-<div id="toast" class="toast" role="status" aria-live="polite"><span id="toast-t"></span></div>
-
 <script>
 (function(){
-  window.addEventListener('error', function(e){
-    try{
-      var d = document.getElementById('errbar');
-      if(!d){ d = document.createElement('div'); d.id = 'errbar'; d.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99;background:#C62828;color:#fff;font:12px/1.4 sans-serif;padding:8px 12px;word-break:break-all'; (document.body || document.documentElement).appendChild(d); }
-      d.textContent = '오류: ' + (e.message || '') + ' (' + String(e.lineno || '') + ') — 이 화면을 캡처해 주세요. 버전 1110-O';
-    }catch(_){}
-  });
-})();
-
-/*PARSE_START*/
-const DOW = {'일':0,'월':1,'화':2,'수':3,'목':4,'금':5,'토':6};
-const PERIOD = '오전|오후|아침|낮|저녁|밤|새벽';
-const pad = n => String(n).padStart(2,'0');
-const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-const hm = min => pad(Math.floor(min/60))+':'+pad(min%60);
-
-function to24(period, h){
-  if(h===0 || h>=13) return h;
-  if(period){
-    if(/오후|저녁|밤/.test(period)){
-      if(h<12) return h+12;
-      return /밤/.test(period) ? 0 : 12;
-    }
-    if(/오전|아침|새벽/.test(period)) return h===12 ? 0 : h;
-    if(/낮/.test(period)) return h<=5 ? h+12 : h;
-  }
-  if(h===12) return 12;
-  return h<=6 ? h+12 : h;
-}
-
-const FIXED_H = [
-  ['크리스마스이브','크리스마스\s*이브',12,24],['크리스마스','크리스마스|성탄절',12,25],['광복절','광복절',8,15],
-  ['삼일절','삼일절|3\.1절',3,1],['어린이날','어린이날',5,5],['어버이날','어버이날',5,8],['현충일','현충일',6,6],
-  ['제헌절','제헌절',7,17],['개천절','개천절',10,3],['한글날','한글날',10,9],['신정','신정|새해\s*첫날',1,1]
-];
-const LUNAR_H = [
-  ['설날','설날|구정',{2026:[2,17],2027:[2,6],2028:[1,26]}],
-  ['추석','추석|한가위',{2026:[9,25],2027:[9,15],2028:[10,3]}],
-  ['부처님오신날','부처님\s*오신\s*날|석가탄신일',{2026:[5,24],2027:[5,13],2028:[5,2]}]
-];
-function holidayFind(s, today){
-  for(const [label, re, m, d] of FIXED_H){
-    const mm = s.match(new RegExp(re)); if(!mm) continue;
-    let dt = new Date(today.getFullYear(), m-1, d);
-    if(dt < today) dt = new Date(today.getFullYear()+1, m-1, d);
-    return {label, text:mm[0], date:dt};
-  }
-  for(const [label, re, tbl] of LUNAR_H){
-    const mm = s.match(new RegExp(re)); if(!mm) continue;
-    for(const y of [today.getFullYear(), today.getFullYear()+1]){
-      const v = tbl[y]; if(!v) continue;
-      const dt = new Date(y, v[0]-1, v[1]);
-      if(dt >= today) return {label, text:mm[0], date:dt};
-    }
-  }
-  return null;
-}
-function holidayOf(dt){
-  const m = dt.getMonth()+1, d = dt.getDate(), y = dt.getFullYear();
-  for(const [label,, mm, dd] of FIXED_H) if(mm === m && dd === d) return label;
-  for(const [label,, tbl] of LUNAR_H){
-    const v = tbl[y]; if(!v) continue;
-    const diff = Math.round((new Date(y, m-1, d) - new Date(y, v[0]-1, v[1])) / 86400000);
-    if(diff === 0) return label;
-    if(label !== '부처님오신날' && Math.abs(diff) === 1) return label + ' 연휴';
-  }
-  return '';
-}
-const KN = {'한':1,'하나':1,'두':2,'둘':2,'세':3,'셋':3,'네':4,'넷':4,'다섯':5,'여섯':6,'일곱':7,'여덟':8,'아홉':9,'열':10,'열한':11,'열두':12};
-function parseEvent(input, now, opts){
-  opts = opts || {};
-  input = String(input).replace(/(열두|열한|열|아홉|여덟|일곱|여섯|다섯|하나|한|두|둘|세|셋|네|넷)\s*시(?!간)/g, (m, k) => KN[k] + '시');
-  let s = ' ' + input.replace(/\s+/g,' ').trim() + ' ';
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const addDays = (d,n) => new Date(d.getFullYear(), d.getMonth(), d.getDate()+n);
-  const out = {title:'', location:'', date:today, start:'', end:'', found:{date:false,time:false}};
-  let m;
-
-  // 날짜
-  if((m = s.match(/(?:(\d{4})\s*년\s*)?(\d{1,2})\s*월\s*(\d{1,2})\s*일(?:에(?=\s))?/))){
-    const hasY = !!m[1];
-    const y = hasY ? +m[1] : today.getFullYear();
-    let d = new Date(y, +m[2]-1, +m[3]);
-    if(!hasY && d < today && !opts.past) d = new Date(y+1, +m[2]-1, +m[3]);
-    out.noYear = !hasY;
-    out.date = d; out.found.date = true; s = s.replace(m[0],' ');
-  } else if((m = s.match(/(다음\s*주|담주|이번\s*주|이번주)?\s*(월|화|수|목|금|토|일)요일(?:에(?=\s))?/))){
-    const dow = DOW[m[2]], pre = m[1] || '';
-    const monday = addDays(today, -((today.getDay()+6)%7));
-    const off = (dow+6)%7;
-    if(/다음|담/.test(pre)) out.date = addDays(monday, 7+off);
-    else if(/이번/.test(pre)) out.date = addDays(monday, off);
-    else out.date = addDays(today, (dow - today.getDay() + 7) % 7);
-    out.found.date = true; s = s.replace(m[0],' ');
-  } else if((m = s.match(/(오늘|내일|모레|글피|어제|그저께|그제)(?:에(?=\s))?/))){
-    out.date = addDays(today, {'오늘':0,'내일':1,'모레':2,'글피':3,'어제':-1,'그저께':-2,'그제':-2}[m[1]]);
-    out.found.date = true; s = s.replace(m[0],' ');
-  } else if((m = holidayFind(s, today))){
-    out.date = m.date; out.found.date = true; out.holiday = m.label; s = s.replace(m.text,' ');
-  } else if((m = s.match(/(?:^|\s)(\d{1,2})\s*일(?!\s*(?:차|간|동안))(?:에(?=\s))?(?=\s)/))){
-    let d = new Date(today.getFullYear(), today.getMonth(), +m[1]);
-    if(d < today && !opts.past) d = new Date(today.getFullYear(), today.getMonth()+1, +m[1]);
-    out.date = d; out.found.date = true; s = s.replace(m[0],' ');
-  }
-
-  // 소요 시간
-  let dur = null;
-  if((m = s.match(/(\d+(?:\.\d+)?)\s*시간(?:\s*(\d{1,2})\s*분|\s*반)?\s*(?:동안|짜리)?/))){
-    dur = Math.round(parseFloat(m[1])*60) + (m[2] ? +m[2] : (/반/.test(m[0]) ? 30 : 0));
-    s = s.replace(m[0],' ');
-  }
-
-  // 시각
-  const T = '(?:('+PERIOD+')\s*)?(\d{1,2})\s*시\s*(?:(\d{1,2})\s*분|(반))?';
-  const rangeRe = new RegExp(T+'\s*(?:부터|~|-|–)\s*'+T+'\s*(?:까지)?(?:에(?=\s))?');
-  const oneRe = new RegExp(T+'(?!간)(?:에(?=\s))?');
-  const colonRe = new RegExp('(?:('+PERIOD+')\s*)?(\d{1,2}):(\d{2})');
-  const mk = (p,h,mi,half) => to24(p, +h)*60 + (mi ? +mi : (half ? 30 : 0));
-  let st = null, en = null;
-  if((m = s.match(rangeRe))){
-    st = mk(m[1],m[2],m[3],m[4]);
-    en = mk(m[5] || m[1], m[6], m[7], m[8]);
-    if(en <= st && en+720 > st) en += 720;
-    s = s.replace(m[0],' ');
-  } else if((m = s.match(oneRe))){
-    st = mk(m[1],m[2],m[3],m[4]); s = s.replace(m[0],' ');
-  } else if((m = s.match(colonRe))){
-    st = mk(m[1],m[2],m[3],0); s = s.replace(m[0],' ');
-  }
-  if(st !== null){
-    if(en === null) en = st + (dur !== null ? dur : 60);
-    en = Math.min(en, 1439);
-    out.start = hm(st); out.end = hm(en); out.found.time = true;
-  }
-
-  // 군더더기 정리
-  s = s.replace(/(?:일정\s*)?(?:을|를)?\s*(?:등록|추가|저장|기록|잡아|만들어)\S*/g,' ');
-  s = s.replace(/\s+/g,' ').trim().replace(/^에\s+/,'');
-
-  // 장소와 제목
-  let title = s, loc = '';
-  const es = s.match(/^(.+?)에서\s+(.+)$/);
-  if(es){ loc = es[1]; title = es[2]; }
-  else {
-    const tk = s.split(' ');
-    const locRe = /(\d+호(?:실|관)?|\d+동|관|실|센터|홀|강당|캠퍼스|도서관|체육관|카페|병원|본관|별관|학교|대학교|학원|공원|회관)$/;
-    let idx = -1;
-    for(let i=0; i<Math.min(tk.length,5); i++) if(locRe.test(tk[i])) idx = i;
-    if(idx >= 0){
-      loc = tk.slice(0,idx+1).join(' '); title = tk.slice(idx+1).join(' ');
-      if(!title && idx > 0){
-        let j = 0; while(j < idx && !locRe.test(tk[j])) j++;
-        if(j > 0){ title = tk.slice(0,j).join(' ').replace(/\s*(장소|위치|장소는|위치는)$/,''); loc = tk.slice(j,idx+1).join(' '); }
-      }
-    }
-  }
-  out.title = title || out.holiday || '새 일정';
-  out.location = loc;
-  return out;
-}
-/*PARSE_END*/
-
-(function(){
   const $ = id => document.getElementById(id);
-  const SERVER = 'Google Calendar';
-  const LS_KEY = 'voicecal.items.v1';
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  const TAG = 'voicecal';
-  const ta = $('said'), fTitle = $('f-title'), fDate = $('f-date'), fStart = $('f-start'), fEnd = $('f-end'), fLoc = $('f-loc');
-  const bSave = $('b-save'), bUpdate = $('b-update'), bDelete = $('b-delete'), bCancel = $('b-cancel'), go = $('go');
-  const summary = $('summary'), statusEl = $('status'), card = $('card'), cardH = $('card-h');
-  const mic = $('mic'), icMic = $('ic-mic'), icStop = $('ic-stop'), sampleTag = $('sampleTag'), autoSw = $('auto'), bargeSw = $('barge');
-  const listEl = $('list'), listMsg = $('list-msg');
-
-  let sample = false, hint = '', rec = null, listening = false, errored = false, heard = '';
-  let mcp = null, busy = false, mode = 'new', editId = null, editWasAllDay = false, lastParsed = null, items = [];
-  let addF = null, addT = 0, hitDate = '', hitIds = [], toastTimer = null, delTimer = null, armedDelete = null, started = false, typed = false, blurTimer = null, lastOk = false, lastId = null;
-
-  const wk = d => '일월화수목금토'[d.getDay()] + '요일';
-  const wk1 = d => '일월화수목금토'[d.getDay()];
-  const fmtTime = v => {
-    const [h,mi] = v.split(':').map(Number);
-    return (h<12 ? '오전 ' : '오후 ') + (h%12===0 ? 12 : h%12) + ':' + pad(mi);
-  };
-  const isoLocal = d => ymd(d) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':00';
-  const addD = (d,n) => new Date(d.getFullYear(), d.getMonth(), d.getDate()+n);
-  const t0 = new Date();
-  $('today').textContent = (t0.getMonth()+1) + '월 ' + t0.getDate() + '일 ' + wk(t0);
-
-  function setStatus(msg, warn){ statusEl.textContent = msg; statusEl.classList.toggle('warn', !!warn); }
-  function toast(msg, bad){
-    const el = $('toast');
-    $('toast-t').textContent = msg;
-    el.classList.toggle('bad', !!bad);
-    el.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), bad ? 5200 : 2600);
-  }
-
-  /* ---------- 편집 카드 ---------- */
-  function validDate(v){ return /^\d{4}-\d{2}-\d{2}$/.test(v); }
-
-  function describe(){
-    const v = fDate.value;
-    if(!validDate(v)) return fTitle.value.trim() ? '날짜를 선택해 주세요' : '말하면 여기에 채워져요';
-    const [y,mo,d] = v.split('-').map(Number);
-    const dt = new Date(y, mo-1, d);
-    let txt = mo + '월 ' + d + '일 ' + wk(dt) + ' · ';
-    txt += fStart.value ? fmtTime(fStart.value) + (fEnd.value ? ' – ' + fmtTime(fEnd.value) : '') : '종일';
-    return txt + hint;
-  }
-
-  const mapQ = loc => String(loc || '').replace(/목과대/g,'목포과학대학교').replace(/\s*\d+\s*호(?:실)?/g,'').replace(/\s+/g,' ').trim();
-  function mapUrls(loc){
-    const q = mapQ(loc); if(!q) return null;
-    const e = encodeURIComponent(q);
-    return {naver:'https://map.naver.com/p/search/' + e, kakao:'https://map.kakao.com/link/search/' + e, google:'https://www.google.com/maps/search/?api=1&query=' + e};
-  }
-  function detailsFor(loc){
-    let t = '말하면 일정으로 등록';
-    const m = mapUrls(loc);
-    if(m) t += '
-
-장소: ' + loc + '
-네이버지도: ' + m.naver + '
-카카오맵: ' + m.kakao + '
-구글지도: ' + m.google;
-    return t;
-  }
-  function gcalUrl(){
-    const v = fDate.value;
-    if(!validDate(v)) return '';
-    const [y,mo,d] = v.split('-').map(Number);
-    let dates;
-    if(fStart.value){
-      const sm = fStart.value.split(':').map(Number);
-      const smin = sm[0]*60 + sm[1];
-      let emin = smin + 60;
-      if(fEnd.value){
-        const em = fEnd.value.split(':').map(Number);
-        if(em[0]*60 + em[1] > smin) emin = em[0]*60 + em[1];
-      }
-      emin = Math.min(emin, 1439);
-      const day = y + pad(mo) + pad(d);
-      dates = day + 'T' + pad(sm[0]) + pad(sm[1]) + '00/' + day + 'T' + pad(Math.floor(emin/60)) + pad(emin%60) + '00';
-    } else {
-      const nx = new Date(y, mo-1, d+1);
-      dates = y + pad(mo) + pad(d) + '/' + nx.getFullYear() + pad(nx.getMonth()+1) + pad(nx.getDate());
-    }
-    let u = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
-    u += '&text=' + encodeURIComponent(fTitle.value.trim() || '새 일정');
-    u += '&dates=' + dates + '&ctz=Asia%2FSeoul';
-    if(fLoc.value.trim()) u += '&location=' + encodeURIComponent(fLoc.value.trim());
-    u += '&details=' + encodeURIComponent(detailsFor(fLoc.value.trim()));
-    return u;
-  }
-
-  /* ---------- 폰 단독 실행용: 링크, 파일, 로컬 목록 ---------- */
-  function normTimes(f){
-    if(!f.start) return {allDay:true};
-    const sm = f.start.split(':').map(Number), smin = sm[0]*60 + sm[1];
-    let emin = smin + 60;
-    if(f.end){ const em = f.end.split(':').map(Number); if(em[0]*60 + em[1] > smin) emin = em[0]*60 + em[1]; }
-    return {allDay:false, smin, emin:Math.min(emin, 1439)};
-  }
-  function gcalFrom(f){
-    const [y,mo,d] = f.date.split('-').map(Number), day = y + pad(mo) + pad(d), t = normTimes(f);
-    let dates;
-    if(t.allDay){ const nx = new Date(y, mo-1, d+1); dates = day + '/' + nx.getFullYear() + pad(nx.getMonth()+1) + pad(nx.getDate()); }
-    else dates = day + 'T' + pad(Math.floor(t.smin/60)) + pad(t.smin%60) + '00/' + day + 'T' + pad(Math.floor(t.emin/60)) + pad(t.emin%60) + '00';
-    let u = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(f.title || '새 일정') + '&dates=' + dates + '&ctz=Asia%2FSeoul';
-    if(f.loc) u += '&location=' + encodeURIComponent(f.loc);
-    return u + '&details=' + encodeURIComponent(detailsFor(f.loc));
-  }
-  function intentFrom(f){
-    const [y,mo,d] = f.date.split('-').map(Number), t = normTimes(f);
-    let b, e;
-    if(t.allDay){ b = Date.UTC(y, mo-1, d); e = b + 86400000; }
-    else {
-      b = new Date(y, mo-1, d, Math.floor(t.smin/60), t.smin%60).getTime();
-      e = new Date(y, mo-1, d, Math.floor(t.emin/60), t.emin%60).getTime();
-    }
-    let u = 'intent:#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.item/event;S.title=' + encodeURIComponent(f.title || '새 일정');
-    if(f.loc) u += ';S.eventLocation=' + encodeURIComponent(f.loc);
-    u += ';S.description=' + encodeURIComponent(detailsFor(f.loc));
-    return u + ';l.beginTime=' + b + ';l.endTime=' + e + ';B.allDay=' + (t.allDay ? 'true' : 'false') + ';end';
-  }
-  function icsFrom(f){
-    const esc = s => String(s || '').replace(/\/g,'\\').replace(/;/g,'\;').replace(/,/g,'\,').replace(/?
-/g,'\n');
-    const [y,mo,d] = f.date.split('-').map(Number), day = y + pad(mo) + pad(d), t = normTimes(f);
-    const n = new Date();
-    const stamp = n.getUTCFullYear() + pad(n.getUTCMonth()+1) + pad(n.getUTCDate()) + 'T' + pad(n.getUTCHours()) + pad(n.getUTCMinutes()) + pad(n.getUTCSeconds()) + 'Z';
-    const L = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//voicecal//KO','BEGIN:VEVENT','UID:' + Date.now() + '@voicecal','DTSTAMP:' + stamp];
-    if(t.allDay){ const nx = new Date(y, mo-1, d+1); L.push('DTSTART;VALUE=DATE:' + day, 'DTEND;VALUE=DATE:' + nx.getFullYear() + pad(nx.getMonth()+1) + pad(nx.getDate())); }
-    else L.push('DTSTART:' + day + 'T' + pad(Math.floor(t.smin/60)) + pad(t.smin%60) + '00', 'DTEND:' + day + 'T' + pad(Math.floor(t.emin/60)) + pad(t.emin%60) + '00');
-    L.push('SUMMARY:' + esc(f.title || '새 일정'));
-    if(f.loc) L.push('LOCATION:' + esc(f.loc));
-    L.push('DESCRIPTION:' + esc(detailsFor(f.loc)));
-    L.push('END:VEVENT','END:VCALENDAR');
-    return L.join('
-') + '
-';
-  }
-  function downloadIcs(f){
-    try{
-      const blob = new Blob([icsFrom(f)], {type:'text/calendar;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'voicecal.ics';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast('일정 파일을 받았어요. 열어서 캘린더에 추가하세요.');
-    }catch(e){ toast('이 화면에서는 파일을 받을 수 없어요.', true); }
-  }
-  function fFromEvent(e){
-    const i = evInfo(e);
-    return {title: e.summary || '', date: i.date, start: i.start, end: i.end, loc: e.location || ''};
-  }
-  function lsLoad(){ try{ const a = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
-  function lsSave(a){ try{ localStorage.setItem(LS_KEY, JSON.stringify(a)); return true; }catch(e){ return false; } }
-  function localEvent(f, id){
-    const t = normTimes(f);
-    if(t.allDay){
-      const [y,mo,d] = f.date.split('-').map(Number);
-      return {id, summary:f.title, location:f.loc, start:{date:f.date}, end:{date:ymd(new Date(y, mo-1, d+1))}};
-    }
-    return {id, summary:f.title, location:f.loc, start:{dateTime:f.date + 'T' + f.start + ':00'}, end:{dateTime:f.date + 'T' + hm(t.emin) + ':00'}};
-  }
-  function newestId(){
-    let best = null;
-    items.forEach(e => { if(!best || String(e.created || '') > String(best.created || '')) best = e; });
-    return best ? best.id : null;
-  }
-  function loadLocal(){
-    const key = x => String((x.start && (x.start.dateTime || x.start.date)) || '');
-    items = lsLoad().sort((a,b) => key(a).localeCompare(key(b)));
-    renderList();
-    if(!items.length) listNote('아직 저장한 녹음이 없어요. 말해서 첫 일정을 저장해 보세요.');
-  }
-
-  function canSubmit(){ return !busy && fTitle.value.trim() !== '' && validDate(fDate.value); }
-
-  function render(){
-    summary.textContent = describe();
-    const ok = canSubmit();
-    bSave.disabled = !ok; bUpdate.disabled = !ok; bDelete.disabled = busy; bCancel.disabled = busy;
-    const u = gcalUrl();
-    if(u && fTitle.value.trim()){ go.href = u; go.setAttribute('aria-disabled','false'); }
-    else { go.removeAttribute('href'); go.setAttribute('aria-disabled','true'); }
-
-    const mu = mapUrls(fLoc.value);
-    [['nmap','naver'],['kmap','kakao'],['gmap','google']].forEach(([id, k]) => {
-      const a = $(id);
-      if(mu){ a.href = mu[k]; a.setAttribute('aria-disabled','false'); }
-      else { a.removeAttribute('href'); a.setAttribute('aria-disabled','true'); }
-    });
-  }
-
-  function applyMode(){
-    const edit = mode === 'edit';
-    card.classList.toggle('editing', edit);
-    cardH.textContent = edit ? '일정 수정' : '새 일정';
-    bSave.hidden = edit;
-    bSave.textContent = mcp ? '캘린더에 저장' : '목록에 저장';
-    go.hidden = !!mcp;
-    bUpdate.hidden = !edit; bDelete.hidden = !edit; bCancel.hidden = !edit;
-    disarmDelete();
-    render();
-    renderList();
-  }
-
-  function fill(o){
-    fTitle.value = o.title; fDate.value = ymd(o.date);
-    fStart.value = o.start; fEnd.value = o.end; fLoc.value = o.location;
-    hint = o.found.date ? '' : ' · 날짜가 없어 오늘로 설정';
-    render();
-  }
-
-  function fromSentence(){
-    lastParsed = parseEvent(ta.value, new Date());
-    fill(lastParsed);
-  }
-  function leaveSample(){ if(sample){ sample = false; sampleTag.hidden = true; } }
-
-  function blankEditor(){
-    ta.value = ''; leaveSample();
-    fTitle.value = ''; fDate.value = ''; fStart.value = ''; fEnd.value = ''; fLoc.value = '';
-    hint = ''; lastParsed = null; heard = '';
-    render();
-  }
-
-  function exitEdit(){
-    if(mode === 'edit'){ mode = 'new'; editId = null; editWasAllDay = false; applyMode(); }
-  }
-
-  ta.addEventListener('focus', () => { if(sample) ta.select(); });
-  ta.addEventListener('input', () => { exitEdit(); leaveSample(); typed = true; clearTimeout(blurTimer); fromSentence(); });
-  ta.addEventListener('focus', () => clearTimeout(blurTimer));
-  ta.addEventListener('blur', () => {
-    if(!typed) return;
-    clearTimeout(blurTimer);
-    blurTimer = setTimeout(() => {
-      if(!typed || busy || mode !== 'new') return;
-      typed = false;
-      const usable = lastParsed && (lastParsed.found.date || lastParsed.found.time);
-      if(autoSw.checked && usable && !intentOf(ta.value)) saveNew(true);
-    }, 800);
-  });
-  [fTitle,fDate,fStart,fEnd,fLoc].forEach(el => el.addEventListener('input', () => { hint = ''; render(); }));
-  $('b-wipe').addEventListener('click', () => {
-    exitEdit(); blankEditor(); setStatus('녹음 내용을 지웠어요. 눌러서 다시 말해 보세요.'); ta.focus();
-  });
-
-  /* ---------- 캘린더 호출 ---------- */
-  function errText(e){
-    switch(e && e.code){
-      case 'not_in_manifest': case 'approval_required': case 'consent_required':
-        return '이 페이지의 Google 캘린더 접근을 허용해 주세요.';
-      case 'needs_reauth': case 'server_not_connected': case 'selection_required': case 'server_not_found':
-        return 'Claude 설정의 커넥터에서 Google Calendar 연결을 확인해 주세요.';
-      case 'blocked_by_policy':
-        return '조직 정책으로 이 캘린더 기능을 쓸 수 없어요.';
-      case 'server_unavailable': case 'upstream_error': case 'rate_limited':
-        return '캘린더에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
-      case 'gas': return '구글 캘린더 연결에 문제가 있어요. ' + String(e.message || '').slice(0,100);
-      case 'tool_error':
-        return '캘린더가 요청을 받지 못했어요. ' + String(e.message || '').slice(0,120);
-      default:
-        return '캘린더를 사용할 수 없어요. 아래 링크 방식으로 등록해 주세요.';
-    }
-  }
-  const ambiguous = e => e && (e.code === 'server_unavailable' || e.code === 'upstream_error');
-  const call = (tool, input) => mcp.callTool(SERVER, tool, input, {cache:false});
-
-  function readFields(){
-    const title = fTitle.value.trim() || (fLoc.value.trim() ? '일정' : '새 일정'), date = fDate.value;
-    if(!validDate(date)) return {ok:false, msg:'날짜를 선택해 주세요.'};
-    let start = fStart.value, end = fEnd.value;
-    if(start){
-      const sm = start.split(':').map(Number), smin = sm[0]*60 + sm[1];
-      let emin = smin + 60;
-      if(end){ const em = end.split(':').map(Number); if(em[0]*60 + em[1] > smin) emin = em[0]*60 + em[1]; }
-      end = hm(Math.min(emin, 1439));
-    }
-    return {ok:true, title, date, start, end, loc: fLoc.value.trim()};
-  }
-
-  function timesFor(f){
-    if(f.start) return {startTime: f.date + 'T' + f.start + ':00', endTime: f.date + 'T' + f.end + ':00'};
-    const [y,mo,d] = f.date.split('-').map(Number);
-    return {allDay:true, startTime: f.date + 'T00:00:00', endTime: ymd(new Date(y, mo-1, d+1)) + 'T00:00:00'};
-  }
-
-  function setBusy(on){ busy = on; render(); }
-
-  async function saveNew(auto){
-    lastOk = false;
-    if(busy) return;
-    const f = readFields();
-    if(!f.ok){ toast(f.msg, true); return; }
-    if(!mcp){
-      const ev = localEvent(f, 'l' + Date.now());
-      const arr = lsLoad(); arr.push(ev);
-      if(!lsSave(arr)){ toast('이 화면에서는 저장할 수 없어요.', true); return; }
-      toast(auto ? '녹음 내용을 목록에 저장했어요' : '목록에 저장했어요');
-      setStatus('저장했어요. 아래 목록에서 캘린더에 추가하세요.');
-      lastOk = true; lastId = ev.id;
-      blankEditor(); loadLocal(); showAddBar(f); return;
-    }
-    const input = Object.assign({summary: f.title, description: detailsFor(f.loc) + '
-· ' + TAG}, timesFor(f));
-    if(f.loc) input.location = f.loc;
-    setBusy(true);
-    try{
-      await call('create_event', input);
-      lastOk = true;
-      toast(auto ? '녹음 내용을 캘린더에 저장했어요' : '캘린더에 저장했어요');
-      setStatus('저장했어요. 아래 목록에서 수정하거나 삭제할 수 있어요.');
-      blankEditor();
-      await refreshList();
-      lastId = newestId();
-    }catch(e){
-      toast(errText(e), true);
-      if(ambiguous(e)){ setStatus('저장됐는지 아래 목록에서 확인해 주세요.', true); refreshList(); }
-    }finally{ setBusy(false); }
-  }
-
-  async function saveEdit(){
-    lastOk = false;
-    if(busy || !editId) return;
-    const f = readFields();
-    if(!f.ok){ toast(f.msg, true); return; }
-    if(!mcp){
-      lsSave(lsLoad().map(x => x.id === editId ? localEvent(f, editId) : x));
-      lastOk = true;
-      toast('일정을 수정했어요');
-      mode = 'new'; editId = null; editWasAllDay = false;
-      blankEditor(); applyMode(); loadLocal(); return;
-    }
-    const t = timesFor(f);
-    const input = Object.assign({eventId: editId, summary: f.title, location: f.loc, description: detailsFor(f.loc) + '
-· ' + TAG}, t);
-    if(!t.allDay && editWasAllDay) input.allDay = false;
-    setBusy(true);
-    try{
-      await call('update_event', input);
-      lastOk = true;
-      toast('일정을 수정했어요');
-      mode = 'new'; editId = null; editWasAllDay = false;
-      blankEditor(); applyMode();
-      await refreshList();
-    }catch(e){
-      toast(errText(e), true);
-      if(ambiguous(e)) refreshList();
-    }finally{ setBusy(false); }
-  }
-
-  async function removeEvent(id){
-    lastOk = false;
-    if(busy || !id) return;
-    if(!mcp){
-      lsSave(lsLoad().filter(x => x.id !== id));
-      lastOk = true; if(lastId === id) lastId = null;
-      toast('삭제했어요');
-      if(editId === id){ mode = 'new'; editId = null; editWasAllDay = false; blankEditor(); applyMode(); }
-      loadLocal(); return;
-    }
-    setBusy(true);
-    try{
-      await call('delete_event', {eventId: id});
-      lastOk = true; if(lastId === id) lastId = null;
-      toast('일정을 삭제했어요');
-      if(editId === id){ mode = 'new'; editId = null; editWasAllDay = false; blankEditor(); applyMode(); }
-      await refreshList();
-    }catch(e){
-      toast(errText(e), true);
-      if(ambiguous(e)) refreshList();
-    }finally{ setBusy(false); }
-  }
-
-  /* ---------- 목록 ---------- */
-  function evInfo(e){
-    const s = e.start || {}, en = e.end || {};
-    if(s.dateTime){
-      return {allDay:false, date:s.dateTime.slice(0,10), start:s.dateTime.slice(11,16), end:(en.dateTime || '').slice(11,16)};
-    }
-    return {allDay:true, date:s.date || '', start:'', end:''};
-  }
-  function evLine(info){
-    if(!validDate(info.date)) return '';
-    const [y,mo,d] = info.date.split('-').map(Number);
-    const dt = new Date(y, mo-1, d);
-    let t = mo + '월 ' + d + '일 ' + wk1(dt) + ' · ';
-    t += info.allDay ? '종일' : fmtTime(info.start) + (info.end ? ' – ' + fmtTime(info.end) : '');
-    return t;
-  }
-
-  function disarmDelete(){
-    clearTimeout(delTimer); armedDelete = null;
-    bDelete.textContent = '삭제'; bDelete.classList.remove('confirm');
-  }
-
-  function renderList(){
-    listEl.textContent = '';
-    items.forEach(e => {
-      const info = evInfo(e);
-      const li = document.createElement('li');
-      li.className = 'row' + (mode === 'edit' && editId === e.id ? ' on' : '') + ((hitDate && info.date === hitDate) || hitIds.includes(e.id) ? ' hit' : '');
-      const main = document.createElement('div'); main.className = 'row-main';
-      const ti = document.createElement('div'); ti.className = 'row-title'; ti.textContent = e.summary || '제목 없음';
-      const me = document.createElement('div'); me.className = 'row-meta mono'; me.textContent = evLine(info);
-      main.append(ti, me);
-      if(e.location){
-        const lo = document.createElement('div'); lo.className = 'row-loc'; lo.textContent = e.location;
-        const mu = mapUrls(e.location);
-        if(mu) [['네이버', mu.naver], ['카카오', mu.kakao], ['구글', mu.google]].forEach(([n, u]) => {
-          const a = document.createElement('a'); a.className = 'maplink'; a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.textContent = n; lo.append(' ', a);
-        });
-        main.append(lo);
-      }
-      const acts = document.createElement('div'); acts.className = 'row-acts';
-      const be = document.createElement('button'); be.type = 'button'; be.className = 'mini'; be.textContent = '수정';
-      be.addEventListener('click', () => startEdit(e));
-      const bd = document.createElement('button'); bd.type = 'button'; bd.className = 'mini danger'; bd.textContent = '삭제';
-      bd.addEventListener('click', () => {
-        if(armedDelete === e.id){ armedDelete = null; clearTimeout(delTimer); removeEvent(e.id); return; }
-        armedDelete = e.id; bd.textContent = '정말 삭제'; bd.classList.add('confirm');
-        clearTimeout(delTimer);
-        delTimer = setTimeout(() => { armedDelete = null; bd.textContent = '삭제'; bd.classList.remove('confirm'); }, 4000);
-      });
-      if(!mcp){
-        const lf = fFromEvent(e);
-        if(validDate(lf.date)){
-          if(isAndroid){ const sa = document.createElement('a'); sa.className = 'mini'; sa.textContent = '삼성 캘린더'; sa.href = intentFrom(lf); acts.append(sa); }
-          const ga = document.createElement('a'); ga.className = 'mini'; ga.textContent = 'Google'; ga.href = gcalFrom(lf); ga.target = '_blank'; ga.rel = 'noopener'; acts.append(ga);
-        }
-      }
-      acts.append(be, bd);
-      li.append(main, acts);
-      listEl.append(li);
-    });
-    if(items.length){ listMsg.hidden = true; }
-  }
-
-  function showAddBar(f){
-    if(mcp) return;
-    const bar = $('addbar'), sam = $('ab-sam');
-    if(isAndroid){ sam.href = intentFrom(f); sam.hidden = false; } else sam.hidden = true;
-    $('ab-g').href = gcalFrom(f);
-    addF = f; bar.hidden = false;
-    clearTimeout(addT); addT = setTimeout(() => { bar.hidden = true; }, 180000);
-  }
-
-  function listNote(text, isErr){
-    listMsg.hidden = false; listMsg.textContent = text; listMsg.classList.toggle('err', !!isErr);
-  }
-
-  async function refreshList(attempt){
-    if(!mcp){ loadLocal(); return; }
-    if(!items.length) listNote('불러오는 중이에요.');
-    try{
-      const now = new Date();
-      const r = await call('list_events', {
-        fullText: TAG, startTime: isoLocal(addD(now,-7)), endTime: isoLocal(addD(now,180)),
-        orderBy: 'startTime', pageSize: 50
-      });
-      const p = r && r.payload && typeof r.payload === 'object' ? r.payload : {};
-      items = Array.isArray(p.events) ? p.events : [];
-      renderList();
-      if(!items.length) listNote('아직 이 앱으로 저장한 일정이 없어요. 말해서 첫 일정을 저장해 보세요.');
-    }catch(e){
-      if(!attempt && e && e.retryable){
-        await new Promise(res => setTimeout(res, (e.retryAfterMs || 1200) + Math.random()*400));
-        return refreshList(1);
-      }
-      listNote(errText(e), true);
-    }
-  }
-
-  function startEdit(e){
-    if(busy) return;
-    const info = evInfo(e);
-    mode = 'edit'; editId = e.id; editWasAllDay = info.allDay;
-    leaveSample(); ta.value = '';
-    fTitle.value = e.summary || ''; fDate.value = info.date; fStart.value = info.start; fEnd.value = info.end; fLoc.value = e.location || '';
-    hint = '';
-    applyMode();
-    card.scrollIntoView({behavior:'smooth', block:'start'});
-    setStatus('수정할 내용을 고치고 수정 저장을 누르세요.');
-  }
-
-  bSave.addEventListener('click', () => { typed = false; clearTimeout(blurTimer); saveNew(false); });
-  bUpdate.addEventListener('click', saveEdit);
-  bCancel.addEventListener('click', () => { mode = 'new'; editId = null; editWasAllDay = false; blankEditor(); applyMode(); });
-  bDelete.addEventListener('click', () => {
-    if(armedDelete === editId && editId){ const id = editId; disarmDelete(); removeEvent(id); return; }
-    armedDelete = editId; bDelete.textContent = '정말 삭제'; bDelete.classList.add('confirm');
-    clearTimeout(delTimer);
-    delTimer = setTimeout(disarmDelete, 4000);
-  });
-  $('b-refresh').addEventListener('click', () => refreshList());
-  $('kb').addEventListener('click', () => { exitEdit(); if(sample) blankEditor(); ta.focus(); });
-
-  /* ---------- 음성: “일정케어” 호출, 말로 저장·취소·삭제·수정 ---------- */
-  /*VOICE_PURE_START*/
-  const WAKE = /(일정|이렇게|일종)\s*(케어|캐어|케이|캐이|께어|카이|카어|게어|계어|care|kare)/i;
-  const CMD = {
-    yes: /^(네|넹|넵|예|응|웅|어|어어|그래|좋아|맞아|맞아요|확인|저장|등록|오케이|ok)/i,
-    no: /^(아니|취소|그만|종료|닫아)/,
-    del: /^(삭제|지워)/,
-    edit: /^(수정|다시|바꿔|변경)/
-  };
-  function cmdOf(t){
-    const x = String(t).replace(/\s+/g, '');
-    if(x.length > 10) return null;
-    for(const k of ['del', 'edit', 'no', 'yes']) if(CMD[k].test(x)) return (k === 'del' || k === 'edit') && x.length > 6 ? null : k;
-    return null;
-  }
-  const BRIEF = /(일정|스케줄|약속).{0,14}(말해|알려|브리핑|읽어|들려|보여|있어|있니|뭐\s*야|뭐\s*있)\S{0,4}\s*$|브리핑/;
-  const MANAGE = /삭제|지워|지우|없애|제거|날려|수정|변경|바꿔|바꾸|(일정|약속).{0,8}취소/;
-  const ALLRE = /전부|전체|모두|모든|몽땅|싹|통째|일괄|다\s*(삭제|지워|지우|없애)/;
-  function intentOf(t){
-    const x = String(t);
-    const c = cmdOf(x);
-    if(c === 'del' || c === 'edit') return null;
-    if(MANAGE.test(x)) return 'manage';
-    if(BRIEF.test(x)) return 'brief';
-    return null;
-  }
-  function spokenTime(v){
-    const [h, mi] = v.split(':').map(Number);
-    return (h < 12 ? '오전 ' : '오후 ') + (h % 12 === 0 ? 12 : h % 12) + '시' + (mi ? ' ' + mi + '분' : '');
-  }
-  /*VOICE_PURE_END*/
-
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const wakeSw = $('wake');
-  const V = {on:false, state:'event', rec:null, talking:false, sayId:0, recLive:false, spoken:'', spokeEnd:0, retries:0, fails:0, idle:0, fatal:false};
-  let wl = null;
-
-  function setListening(on){
-    listening = on;
-    mic.classList.toggle('on', on);
-    mic.setAttribute('aria-pressed', String(on));
-    mic.setAttribute('aria-label', on ? '말하기 멈추기' : '말하기 시작');
-    icMic.hidden = on; icStop.hidden = !on;
-  }
-  function fallback(msg){
-    setListening(false);
-    setStatus(msg || '이 화면에서는 마이크 버튼을 쓸 수 없어요.', true);
-    $('kb').hidden = false;
-  }
-  async function lockOn(){ try{ if('wakeLock' in navigator) wl = await navigator.wakeLock.request('screen'); }catch(e){} }
-  function lockOff(){ try{ if(wl) wl.release(); }catch(e){} wl = null; }
-
-  function showState(){
-    if(!V.on) return;
-    const t = {
-      wake: '“일정케어”라고 불러 보세요. 화면은 켜 두세요.',
-      event: '일정을 말씀하세요.',
-      confirm: '저장할까요? “저장” 또는 “취소”. 추가할 내용은 그대로 말씀하세요.',
-      addMore: '추가할 내용을 말씀하세요. 없으면 곧 저장해요.',
-      confirmBulk: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
-      startAsk: '일정을 등록할까요? “네”라고 말씀하세요.',
-      confirmSave: '이렇게 수정할까요? “네” 또는 “취소”라고 말하세요.',
-      confirmEdit: '수정할까요? “네” 또는 “취소”라고 말하세요.',
-      confirmDelete: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
-      pick: '몇 번째, 또는 몇 시 일정인지 말씀하세요.',
-      pickAction: '“삭제” 또는 “수정”이라고 말하세요.',
-      editWhat: '바꿀 내용을 말씀하세요.'
-    }[V.state];
-    setStatus(t || '');
-  }
-
-  function spokenEvent(){
-    const v = fDate.value;
-    const title = fTitle.value.trim() || '일정';
-    if(!validDate(v)) return title;
-    const [y, mo, d] = v.split('-').map(Number);
-    let t = mo + '월 ' + d + '일 ' + wk(new Date(y, mo-1, d)) + ' ' + (fStart.value ? spokenTime(fStart.value) : '종일') + ', ' + title;
-    if(fLoc.value.trim()) t += ', 장소는 ' + fLoc.value.trim();
-    return t;
-  }
-
-  const norm = t => String(t).replace(/[^0-9A-Za-z가-힣]/g, '');
-  function isEcho(t, sp){
-    t = norm(t); sp = norm(sp);
-    if(!t) return true;
-    if(sp.includes(t)) return true;
-    if(t.length < 2) return false;
-    let hit = 0, n = 0;
-    for(let i = 0; i < t.length - 1; i++){ n++; if(sp.includes(t.substr(i, 2))) hit++; }
-    return n > 0 && hit / n >= 0.6;
-  }
-  let actx = null;
-  function chime(n){
-    try{
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      if(actx.state === 'suspended') actx.resume();
-      for(let i = 0; i < (n || 1); i++){
-        const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * 0.2;
-        o.type = 'sine'; o.frequency.value = i ? 1175 : 880; o.connect(g); g.connect(actx.destination);
-        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
-        o.start(t); o.stop(t + 0.18);
-      }
-    }catch(_){}
-  }
-  (function(){
-    const bar = document.createElement('button');
-    bar.type = 'button'; bar.id = 'unlock'; bar.textContent = '🔊 화면을 한 번 터치하면 안내 음성이 켜져요';
-    bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;padding:14px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.25)';
-    const active = () => { try{ return navigator.userActivation && navigator.userActivation.hasBeenActive; }catch(_){ return false; } };
-    const unlock = () => {
-      bar.remove(); V.unlocked = true;
-    };
-    document.addEventListener('pointerdown', () => { if(!V.unlocked) unlock(); }, true);
-    document.addEventListener('keydown', () => { if(!V.unlocked) unlock(); }, true);
-    const show = () => { if(!V.unlocked && !active()) document.body.appendChild(bar); else if(active()) V.unlocked = true; };
-    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show); else show();
-  })();
+  const pad = n => String(n).padStart(2,'0');
+  const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   
-  // 아나운서 톤 음성 합성
-  function say(text, after, asAnnouncer = false){
-    V.talking = true; V.spoken = text; const sid = ++V.sayId;
-    if(!(bargeSw.checked && V.recLive)){ try{ if(V.rec) V.rec.abort(); }catch(e){} }
-    return new Promise(res => {
-      let done = false, started = false;
-      const fin = () => { if(done) return; done = true; res(); };
-      setTimeout(() => { if(!started && !done){ V.ttsSilent = true; chime(2); toast('안내 음성이 막혀 있어요. 화면 위에 글자로 보여드려요.'); } }, 1800);
-      try{
-        if(!('speechSynthesis' in window)){ fin(); return; }
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'ko-KR';
-        
-        // 일반 vs 세련된 톤 조절
-        if(asAnnouncer) {
-            u.rate = 1.0; 
-            u.pitch = 1.0; // 차분하고 안정적
-        } else {
-            u.rate = 1.05;
-            u.pitch = 1.05;
-        }
+  const fTitle = $('f-title'), fDate = $('f-date'), fStart = $('f-start'), fEnd = $('f-end'), fLoc = $('f-loc');
+  const bSave = $('b-save'), bCancel = $('b-cancel'), bDelete = $('b-delete');
+  const statusEl = $('status'), micBtn = $('mic'), listEl = $('list');
 
-        u.onstart = () => { started = true; V.ttsSilent = false; };
-        u.onend = fin;
-        u.onerror = fin;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
-        setTimeout(fin, Math.min(12000, 1500 + text.length * 260));
-      }catch(e){ fin(); }
-    }).then(() => {
-      if(sid !== V.sayId) return;
-      V.talking = false; V.spokeEnd = Date.now();
-      if(after) after();
-      if(V.on && !V.recLive) vListen();
-    });
+  let items = JSON.parse(localStorage.getItem('voice_events') || '[]');
+  let isListening = false, recognition = null, synth = window.speechSynthesis;
+  let activeId = null;
+
+  // 오늘 날짜 표시
+  const now = new Date();
+  $('today').textContent = (now.getMonth()+1) + '월 ' + now.getDate() + '일';
+  fDate.value = ymd(now);
+
+  // 음성 출력 (TTS) 함수 (오디오 브라우저 락 해제 지원)
+  function speak(text, callback) {
+    if(!synth) return;
+    synth.cancel(); // 이전 음성 취소
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    utterance.rate = 1.0;
+    utterance.onend = () => { if(callback) callback(); };
+    synth.speak(utterance);
   }
 
+  // 시작 스플래시 화면 터치 시 음성 활성화
+  $('splash').addEventListener('click', () => {
+    $('splash').classList.add('done');
+    speak('일정케어 앱이 시작되었습니다. 일정을 말씀해 주세요.');
+  });
 
-  function backToIdle(){
-    V.fieldAsk = null; V.retries = 0; V.pend = null; V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
-    V.state = 'event'; showState();
-  }
-  function discardDraft(){
-    V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
-    if(mode === 'edit'){ mode = 'new'; editId = null; editWasAllDay = false; applyMode(); }
-    blankEditor();
-  }
+  // 파싱 함수: "12시 평광 친구약속" 처리
+  function parseSpeech(text) {
+    let title = text, loc = '', time = '', date = ymd(new Date());
 
-  function handleEventText(text){
-    clearTimeout(V.pTimer);
-    const full = (V.partial ? V.partial + ' ' : '') + text;
-    leaveSample(); ta.value = full; fromSentence();
-    const hasWhen = !!(lastParsed && (lastParsed.found.date || lastParsed.found.time));
-    const hasTitle = !!(lastParsed && lastParsed.title && lastParsed.title !== '새 일정');
-    if(hasWhen && hasTitle){ V.partial = ''; V.pAsk = 0; V.retries = 0; askConfirm(); return; }
-    V.partial = full;
-    if(hasWhen){
-      V.pTimer = setTimeout(() => {
-        if(!V.on || V.state !== 'event' || !V.partial) return;
-        V.partial = ''; V.pAsk = 0; V.retries = 0;
-        if(!fTitle.value.trim() || fTitle.value.trim() === '새 일정') fTitle.value = '약속';
-        render(); askConfirm();
-      }, 2500);
-      return;
+    // 시간 추출 (예: 12시, 오후 3시)
+    const timeMatch = text.match(/(오전|오후)?\s*(\d{1,2})\s*시/);
+    if(timeMatch) {
+      let hour = parseInt(timeMatch[2]);
+      if(timeMatch[1] === '오후' && hour < 12) hour += 12;
+      if(timeMatch[1] === '오전' && hour === 12) hour = 0;
+      time = pad(hour) + ':00';
+      text = text.replace(timeMatch[0], '').trim();
     }
-    V.pTimer = setTimeout(() => {
-      if(!V.on || V.state !== 'event' || !V.partial) return;
-      V.pAsk = (V.pAsk || 0) + 1;
-      if(V.pAsk >= 3){ V.partial = ''; V.pAsk = 0; blankEditor(); say('알아듣지 못했어요. 처음부터 다시 말씀해 주세요.'); return; }
-      const w = lastParsed && (lastParsed.found.date || lastParsed.found.time);
-      say(w ? '무슨 일정인가요?' : '날짜나 시간을 말씀해 주세요.');
-    }, 3500);
-  }
 
-  function armTimer(){
-    clearTimeout(V.cTimer);
-    V.cTimer = setTimeout(() => {
-      if(!V.on || V.talking) return;
-      if(V.state === 'confirm'){
-        if(!V.nag){ V.nag = 1; say('저장할까요? “저장” 또는 “취소”라고 말씀하세요.', armTimer); }
-        else { V.nag = 0; discardDraft(); say('저장하지 않고 닫았어요.', backToIdle); }
-      }
-    }, 10000);
-  }
-  function askConfirm(){
-    V.state = 'confirm'; V.nag = 0; showState();
-    say(spokenEvent() + '. 맞나요? 맞으면 네, 아니면 수정이라고 말씀하세요.', armTimer);
-  }
-
-  // 말한 내용을 지금 고치는 중인 일정에 반영 (제목·장소·날짜·시간). free=true면 나머지 말은 제목에 덧붙임
-  const FIELDS = {제목:'title', 이름:'title', 일정명:'title', 장소:'loc', 위치:'loc', 시간:'time', 시각:'time', 날짜:'date'};
-  const FIELD_LABEL = {title:'제목으로', loc:'장소로', time:'시간으로', date:'날짜로'};
-  const CHG = '(?:변경|수정|바꿔|바꾸|바꿀|고쳐|옮겨|정정)';
-  const FIELD_ONLY = new RegExp('^(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:을|를|은|는)?' + CHG + '\S*$');
-  const FIELDISH = new RegExp('^(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:을|를|은|는)?\s*' + CHG);
-  const fieldOnly = text => { const m = String(text).replace(/\s+/g, '').match(FIELD_ONLY); return m ? FIELDS[m[1]] : null; };
-  function applyChanges(text, free, force){
-    const t = String(text).trim().replace(/[.,!?]+$/, '');
-    const cleanV = v => String(v).replace(new RegExp('\s*(?:으로|로)?\s*' + CHG + '\S*\s*$'), '').replace(/\s*(?:해\s*줘|해주세요|해요|해)$/, '').replace(/(?:으로|로)$/, '').trim();
-    const isPlace = v => /(\d+호|\d+동|관|실|센터|홀|강당|캠퍼스|도서관|체육관|카페|병원|본관|별관|학교|대학교|학원|공원|회관|역|터미널)$/.test(String(v).trim().split(/\s+/).pop());
-    const setTime = (p, src) => {
-      let dur = 60;
-      if(fStart.value && fEnd.value){
-        const a = fStart.value.split(':').map(Number), b = fEnd.value.split(':').map(Number), dd = b[0]*60 + b[1] - (a[0]*60 + a[1]);
-        if(dd > 0) dur = dd;
-      }
-      fStart.value = p.start;
-      if(/부터|~|-/.test(src)) fEnd.value = p.end;
-      else { const q = p.start.split(':').map(Number); fEnd.value = hm(Math.min(q[0]*60 + q[1] + dur, 1439)); }
-    };
-    const setField = (f, raw) => {
-      const v = cleanV(raw); if(!v) return false;
-      if(f === 'loc'){ fLoc.value = v; return true; }
-      if(f === 'title'){ fTitle.value = v; return true; }
-      const p = parseEvent(v, new Date());
-      if(f === 'date' && p.found.date){ fDate.value = ymd(p.date); return true; }
-      if(f === 'time' && p.found.time){ setTime(p, v); return true; }
-      return false;
-    };
-    if(force){ const ok = setField(force, t); if(ok) render(); return ok; }
-    let m = t.match(new RegExp('^(.+?)(?:으로|로)\s*(제목|이름|일정명|장소|위치|시간|시각|날짜)\s*' + CHG + '\S*$'));
-    if(m && setField(FIELDS[m[2]], m[1])){ render(); return true; }
-    let changed = false;
-    const fm = [...t.matchAll(/(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:은|는|을|를)?\s*/g)];
-    if(fm.length){
-      fm.forEach((x, k) => {
-        const end = k + 1 < fm.length ? fm[k+1].index : t.length;
-        const v = t.slice(x.index + x[0].length, end);
-        if(/^\s*(?:변경|수정|바꿔|바꾸|바꿀|고쳐|옮겨|정정)/.test(v)) return;
-        if(setField(FIELDS[x[1]], v)) changed = true;
-      });
-      if(changed){ render(); return true; }
-    }
-    const p = parseEvent(t, new Date());
-    if(p.found.date){ fDate.value = ymd(p.date); changed = true; }
-    if(p.found.time){ setTime(p, t); changed = true; }
-    if(!changed){
-      const rm = t.match(new RegExp('^(.+?)(?:으로|로)?\s*' + CHG + '\S*(?:\s*(?:해\s*줘|해주세요|해요))?$'));
-      if(rm && rm[1].trim() && !/^(제목|이름|일정명|장소|위치|시간|시각|날짜)$/.test(rm[1].trim())){
-        const v = cleanV(rm[1]); if(isPlace(v)) fLoc.value = v; else fTitle.value = v; changed = true;
-      }
-    }
-    if(free && !changed){
-      if(p.location){ fLoc.value = p.location; changed = true; }
-      const tt = (p.title || '').trim();
-      if(tt && tt !== '새 일정'){
-        const cur = fTitle.value.trim();
-        fTitle.value = (!cur || cur === '새 일정' || cur === '약속') ? tt : (cur.includes(tt) ? cur : cur + ' ' + tt);
-        changed = true;
-      }
-    } else if(free && changed){
-      if(p.location){ fLoc.value = p.location; }
-      const tt = (p.title || '').trim();
-      if(tt && tt !== '새 일정'){
-        const cur = fTitle.value.trim();
-        fTitle.value = (!cur || cur === '새 일정' || cur === '약속') ? tt : (cur.includes(tt) ? cur : cur + ' ' + tt);
-      }
-    }
-    if(changed) render();
-    return changed;
-  }
-
-  async function doSave(prefix){
-    clearTimeout(V.cTimer);
-    const sp = spokenEvent();
-    if(mode === 'edit') await saveEdit(); else await saveNew(true);
-    say(lastOk ? (prefix || '저장했어요. ') + sp : '저장하지 못했어요. 화면을 확인해 주세요.', backToIdle);
-  }
-  function askDelete(){
-    const id = lastId || newestId();
-    const e = items.find(x => x.id === id);
-    if(!e){ say('삭제할 일정이 없어요.', backToIdle); return; }
-    lastId = id;
-    V.state = 'confirmDelete'; showState();
-    say('방금 저장한 ' + (e.summary || '일정') + ' 일정을 삭제할까요?');
-  }
-  async function doDelete(){
-    const id = lastId || newestId();
-    const e = items.find(x => x.id === id);
-    const name = e ? (e.summary || '일정') : '일정';
-    await removeEvent(id);
-    say(lastOk ? name + ' 일정을 삭제했어요.' : '삭제하지 못했어요. 화면을 확인해 주세요.', backToIdle);
-  }
-  function voiceEditLast(){
-    const id = lastId || newestId();
-    const e = items.find(x => x.id === id);
-    if(!e){ say('수정할 일정이 없어요. 새 일정을 말씀해 주세요.'); return; }
-    askEdit(e);
-  }
-
-  const byStart = (a, b) => (evInfo(a).start || '').localeCompare(evInfo(b).start || '');
-  const spokenDate = d => (d.getMonth()+1) + '월 ' + d.getDate() + '일 ' + wk(d);
-  function briefText(d, list){
-    const hol = holidayOf(d);
-    const head = spokenDate(d) + (hol ? ', ' + hol : '');
-    if(!list.length) return head + '에는 저장된 일정이 없어요.';
-    let t = head + ', 일정이 ' + list.length + '개 있어요. ';
-    list.forEach((e, i) => {
-      const inf = evInfo(e);
-      t += (i+1) + '번, ' + (inf.allDay ? '종일' : spokenTime(inf.start)) + ', ' + (e.summary || '일정') + (e.location ? ', 장소는 ' + e.location : '') + '. ';
-    });
-    return t;
-  }
-
-  function briefTextMulti(list){
-    let t = '찾은 일정이 ' + list.length + '개 있어요. ';
-    list.forEach((e, i) => {
-      const inf = evInfo(e), [y, mo, da] = inf.date.split('-').map(Number), dt = new Date(y, mo-1, da);
-      t += (i+1) + '번, ' + mo + '월 ' + da + '일 ' + wk(dt) + ' ' + (inf.allDay ? '종일' : spokenTime(inf.start)) + ', ' + (e.summary || '일정') + (e.location ? ', 장소는 ' + e.location : '') + '. ';
-    });
-    return t;
-  }
-
-  async function runIntent(kind, text){
-    V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
-    const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const p = parseEvent(text, now, {past:true});
-    let d = p.found.date ? p.date : today;
-    blankEditor(); exitEdit();
-    if(mcp) await refreshList(); else loadLocal();
-    const on = dt => items.filter(e => evInfo(e).date === ymd(dt)).sort(byStart);
-    let list = on(d), byWord = false;
-    if(!p.found.date){
-      const STOP = /^(일정|스케줄|약속|전부|전체|모두|모든|몽땅|싹|통째|일괄|전부다|다|좀|그|이|저|거|것|제목|관련|연관|있는|들어간|그리고|및|빼고|제외|말고|내|나의|오늘|내일|모레|글피|어제|해줘|해주세요|해요|줘|있어|뭐야|있니)$/;
-      const cleaned = text.split(/\s+/).map(t => t.replace(/(삭제|지워|지우|없애|제거|수정|변경|바꿔|바꾸|알려|말해|브리핑|보여|읽어)\S*$/, '').replace(/(해\s*줘|해주세요|해요|좀)$/, '').replace(/(을|를)$/, ''))
-        .filter(t => t && !/^\d+\s*(시|분|번째|번)$/.test(t) && !(p.found.time && /(시|분|시에|시반)$/.test(t)));
-      const meaningful = cleaned.filter(t => !STOP.test(t));
-      const allWord = ALLRE.test(text);
-      const variants = [];
-      meaningful.forEach(t => { if(t.length >= 2) variants.push(t); });
-      if(meaningful.length){
-        const j2 = cleaned.filter(t => !/^(전부|전체|모두|모든|몽땅|싹|통째|일괄|전부다|다|좀|그|거|것)$/.test(t)).join('');
-        if(j2.length >= 2) variants.push(j2);
-        const j3 = j2.replace(/일정$/, '');
-        if(j3.length >= 2) variants.push(j3);
-      }
-      const sp0 = v => String(v || '').replace(/\s+/g, '');
-      let m = variants.length ? items.filter(e => variants.some(w => sp0(e.summary).includes(w) || sp0(e.location).includes(w))) : [];
-      if(m.length && p.found.time){
-        const [h, mi] = p.start.split(':').map(Number), mins = h*60 + mi;
-        const n = m.filter(e => { const i = evInfo(e); if(!i.start) return false; const [eh, em] = i.start.split(':').map(Number), t = eh*60 + em; return t === mins || t === mins - 720 || t === mins + 720; });
-        if(n.length) m = n;
-      }
-      const key = e => { const i = evInfo(e); return i.date + ' ' + (i.start || ''); };
-      if(!m.length && !meaningful.length && allWord && kind === 'manage' && items.length) m = items.slice();
-      if(m.length){
-        m = m.sort((a, b) => key(a).localeCompare(key(b)));
-        list = allWord ? m : m.slice(0, 8); byWord = true;
-        d = new Date(list[0].start && (list[0].start.dateTime || list[0].start.date) ? String(list[0].start.dateTime || list[0].start.date).slice(0, 10) + 'T00:00:00' : today);
-      } else if(kind === 'manage' && (meaningful.length || !on(today).length)){
-        say(meaningful.length ? '“' + meaningful.join(' ') + '” 일정을 못 찾았어요. 제목이나 날짜를 다시 말씀해 주세요.' : '어떤 일정인지 못 찾았어요. 날짜나 제목을 같이 말씀해 주세요.', backToIdle); return;
-      }
-    }
-    if(!list.length && p.noYear && d < today){
-      const d2 = new Date(d.getFullYear()+1, d.getMonth(), d.getDate()), l2 = on(d2);
-      if(l2.length){ d = d2; list = l2; }
-    }
-    hitDate = byWord ? '' : ymd(d); hitIds = byWord ? list.map(e => e.id) : []; renderList();
-    const hit = listEl.querySelector('.hit'); if(hit) hit.scrollIntoView({behavior:'smooth', block:'center'});
-    const bt = byWord ? briefTextMulti(list) : briefText(d, list);
-    setStatus(bt);
-    if(kind === 'brief' || !list.length){ say(bt, backToIdle); return; }
-    V.act = /삭제|지워|지우|없애|제거/.test(text) ? 'del' : (/수정|변경|바꿔|바꾸/.test(text) ? 'edit' : null);
-    const all = ALLRE.test(text);
-    const exRe = /빼고|제외하고|제외|말고|만\s*남기고|만\s*남겨/;
-    const multiWord = byWord && list.length > 1 && !p.found.time && !/\d+\s*(번|째)|(첫|두|세|네|다섯|여섯)\s*번/.test(text);
-    if(V.act === 'del' && (all || exRe.test(text) || multiWord)){
-      let keep = [];
-      if(exRe.test(text)){
-        keep = pickTarget(text.split(exRe)[0], list);
-        if(!keep.length){ say(bt + ' 남길 일정을 못 찾았어요. 시간이나 번호로 다시 말씀해 주세요.', backToIdle); return; }
-      }
-      const del = list.filter(e => !keep.includes(e));
-      if(!del.length){ say('삭제할 일정이 없어요.', backToIdle); return; }
-      V.bulk = del.map(e => e.id); V.state = 'confirmBulk'; showState();
-      const names = del.slice(0, 3).map(e => { const di = evInfo(e).date.split('-'); return (+di[1]) + '월 ' + (+di[2]) + '일 ' + (e.summary || '일정'); }).join(', ') + (del.length > 3 ? ' 등' : '');
-      say((keep.length ? keep.map(e => (e.summary || '일정')).join(', ') + ' 일정만 남기고 ' : (byWord ? '' : spokenDate(d) + ' 일정 ')) + del.length + '개' + (byWord ? '(' + names + ')' : '') + '를 삭제할까요?');
-      return;
-    }
-    if(V.act && list.length > 1){
-      const m = pickTarget(text, list);
-      if(m.length === 1){
-        V.pick = {list, date:d}; V.target = m[0]; lastId = m[0].id;
-        if(V.act === 'del'){ V.state = 'confirmDelete'; showState(); say((m[0].summary || '일정') + ' 일정을 삭제할까요?'); }
-        else askEdit(m[0]);
-        return;
-      }
-    }
-    V.pick = {list, date:d}; V.target = null; V.retries = 0;
-    V.act = /삭제|지워|지우|없애|제거/.test(text) ? 'del' : (/수정|변경|바꿔|바꾸/.test(text) ? 'edit' : null);
-    if(list.length === 1){
-      V.target = list[0]; lastId = list[0].id;
-      if(V.act === 'del'){ V.state = 'confirmDelete'; showState(); say(bt + ' 이 일정을 삭제할까요?'); }
-      else if(V.act === 'edit'){ askEdit(list[0], bt + ' '); }
-      else { V.state = 'pickAction'; showState(); say(bt + ' 이 일정을 수정할까요, 삭제할까요?'); }
+    // 장소 및 제목 분리 (주요 키워드 패턴)
+    const words = text.split(' ');
+    if(words.length >= 2) {
+      loc = words[0]; // 첫 단어를 장소로 추정 (예: 평광)
+      title = words.slice(1).join(' '); // 나머지를 제목으로 추정 (예: 친구약속)
     } else {
-      V.state = 'pick'; showState();
-      say(bt + ' 어떤 일정을 수정하거나 삭제할까요? 번호나 시간을 말씀해 주세요.');
+      title = text;
     }
+
+    return { title, loc, time, date };
   }
 
-  function pickTarget(text, list){
-    const x = text.replace(/\s+/g, '');
-    const nm = {첫:1, 한:1, 하나:1, 일:1, 두:2, 둘:2, 이:2, 세:3, 셋:3, 삼:3, 네:4, 넷:4, 사:4, 다섯:5, 오:5, 여섯:6, 육:6, 일곱:7, 칠:7, 여덟:8, 팔:8};
-    let idx = 0, m = x.match(/(\d+)\s*(번|째|째로)/);
-    if(m) idx = +m[1];
-    else if((m = x.match(/(첫|한|하나|일|두|둘|이|세|셋|삼|네|넷|사|다섯|오|여섯|육|일곱|칠|여덟|팔)(번째|번|째)/))) idx = nm[m[1]];
-    else if((m = x.match(/^(?:삭제|수정|지워|지우|변경)?(\d+|하나|둘|셋|넷|일|이|삼|사|오)(?:번|번째)?(?:삭제|수정|지워|지우|변경|해|요|줘)*$/))) idx = /^\d+$/.test(m[1]) ? +m[1] : nm[m[1]];
-    else if(/첫째|처음|맨위|맨앞|제일위/.test(x)) idx = 1;
-    else if(/마지막|맨끝|맨아래|끝/.test(x)) idx = list.length;
-    if(idx && list[idx-1]) return [list[idx-1]];
-    const p = parseEvent(text, new Date());
-    if(p.found.time){
-      const [h, mi] = p.start.split(':').map(Number), mins = h*60 + mi;
-      const hit = list.filter(e => {
-        const i = evInfo(e); if(!i.start) return false;
-        const [eh, em] = i.start.split(':').map(Number), t = eh*60 + em;
-        return t === mins || t === mins - 720 || t === mins + 720;
-      });
-      if(hit.length) return hit;
+  // 화면 필드 갱신
+  function setFields(parsed) {
+    if(parsed.title) fTitle.value = parsed.title;
+    if(parsed.loc) fLoc.value = parsed.loc;
+    if(parsed.time) {
+      fStart.value = parsed.time;
+      const [h, m] = parsed.time.split(':').map(Number);
+      fEnd.value = pad(Math.min(h+1, 23)) + ':' + pad(m);
     }
-    const toks = String(text).replace(/(일정|스케줄|약속|삭제|지워|지우|수정|변경|바꿔|바꾸|해\s*줘|해주세요|해요|좀|그거|이거|저거|것|제목|관련|연관|있는|들어간)\S{0,2}/g, ' ').split(/\s+/).filter(w => w.length >= 2);
-    return list.filter(e => {
-      const t = String(e.summary || '').replace(/\s+/g, ''), l = String(e.location || '').replace(/\s+/g, '');
-      const words = String(e.summary || '').split(/\s+/);
-      return words.some(w => w.length >= 2 && x.includes(w)) || toks.some(w => (t && t.includes(w)) || (l && l.includes(w)));
-    });
+    if(parsed.date) fDate.value = parsed.date;
   }
 
-  async function doBulk(){
-    const ids = V.bulk || []; V.bulk = null;
-    let n = 0;
-    for(const id of ids){ await removeEvent(id); if(lastOk) n++; }
-    say(n ? n + '개 일정을 삭제했어요.' : '삭제하지 못했어요. 화면을 확인해 주세요.', backToIdle);
-  }
+  // 음성 명령어 처리 로직 (저장, 삭제, 취소, 수정)
+  function processCommand(text) {
+    const cleanText = text.replace(/\s+/g, '');
 
-  const x2 = t => String(t).replace(/\s+/g, '').replace(/(삭제|수정|지워|지우|변경|바꿔|해줘|해|줘|요)/g, '').length === 0;
-  function handlePick(text){
-    const list = V.pick ? V.pick.list : [];
-    const cmd = cmdOf(text);
-    let del = cmd === 'del' || /삭제|지워|지우|없애|제거/.test(text);
-    let edt = cmd === 'edit' || /수정|변경|바꿔|바꾸/.test(text);
-    if(!del && !edt && V.act){ del = V.act === 'del'; edt = V.act === 'edit'; }
-    if(cmd === 'no'){ say('취소했어요.', backToIdle); return; }
-    let target = V.target;
-    if(V.state === 'pick' || !target){
-      let m = pickTarget(text, list);
-      if(!m.length && list.length === 1) m = [list[0]];
-      const all = ALLRE.test(text);
-      if(del && all && list.length){
-        V.bulk = list.map(e => e.id); V.state = 'confirmBulk'; showState();
-        say(list.length + '개 일정을 모두 삭제할까요?'); return;
-      }
-      if(!m.length && (del || edt) && x2(text)){
-        V.act = del ? 'del' : 'edit';
-        say('어떤 일정을 ' + (del ? '삭제' : '수정') + '할까요? 번호나 시간을 말씀해 주세요.');
-        return;
-      }
-      if(m.length !== 1){
-        V.retries++;
-        if(V.retries >= 3) say('알아듣지 못했어요. 다시 불러 주세요.', backToIdle);
-        else say(m.length > 1 ? '해당되는 일정이 여러 개예요. 번호로 말씀해 주세요.' : '어느 일정인지 못 알아들었어요. 번호나 시간을 말씀해 주세요.');
-        return;
-      }
-      target = V.target = m[0];
+    if(cleanText.includes('저장') || cleanText.includes('등록')) {
+      saveEvent();
+      return true;
     }
-    lastId = target.id; V.retries = 0;
-    const name = target.summary || '일정';
-    if(del){ V.state = 'confirmDelete'; showState(); say(name + ' 일정을 삭제할까요?'); return; }
-    if(edt){ askEdit(target); return; }
-    V.state = 'pickAction'; showState();
-    say(name + ' 일정이에요. 삭제할까요, 수정할까요?');
-  }
-
-  function askEdit(e, prefix){
-    V.target = e; lastId = e.id; V.state = 'confirmEdit'; showState();
-    say((prefix || '') + (e.summary || '일정') + ' 일정을 수정할까요?');
-  }
-  function startEditVoice(e, prefix){
-    startEdit(e);
-    V.target = e; V.retries = 0; V.state = 'editWhat'; showState();
-    say((prefix || '') + (e.summary || '일정') + ' 일정을 어떻게 바꿀까요? 바꿀 내용을 말씀하세요.');
-  }
-
-  async function handleEditWhat(text){
-    const cmd = cmdOf(text);
-    if(cmd === 'no'){ discardDraft(); say('수정을 취소했어요.', backToIdle); return; }
-    if(/삭제|지워/.test(text)){
-      lastId = editId; V.state = 'confirmDelete'; showState();
-      say((fTitle.value.trim() || '일정') + ' 일정을 삭제할까요?'); return;
+    if(cleanText.includes('취소')) {
+      resetForm();
+      speak('입력을 취소했습니다.');
+      return true;
     }
-    let changed;
-    if(V.fieldAsk){ const f = V.fieldAsk; V.fieldAsk = null; changed = applyChanges(text, false, f); }
-    else if(fieldOnly(text)){ V.fieldAsk = fieldOnly(text); say('어떤 ' + FIELD_LABEL[V.fieldAsk] + ' 바꿀까요?'); return; }
-    else changed = applyChanges(text, false);
-    if(!changed){
-      V.retries++;
-      if(V.retries >= 2){ discardDraft(); say('알아듣지 못했어요. 수정을 마칠게요.', backToIdle); }
-      else say('못 알아들었어요. 바꿀 내용을 다시 말씀해 주세요.');
-      return;
-    }
-    render();
-    V.state = 'confirmSave'; V.retries = 0; showState();
-    say('이렇게 수정할까요? ' + spokenEvent() + '. 네 또는 취소라고 말씀하세요. 더 바꿀 내용을 말씀하셔도 돼요.');
-  }
-  async function doEditSave(){
-    const sp = spokenEvent();
-    await saveEdit();
-    say(lastOk ? '수정했어요. ' + sp : '수정하지 못했어요. 화면을 확인해 주세요.', backToIdle);
-  }
-
-  function vHandle(alts){
-    if(V.state !== 'wake'){
-      const lead = new RegExp('^\s*(?:' + WAKE.source + ')[\s,.!?]*', 'i');
-      const had = alts.some(a => lead.test(a));
-      alts = alts.map(a => a.replace(lead, '').trim()).filter(Boolean);
-      if(!alts.length){
-        if(had){ V.state = 'event'; showState(); say('네, 일정을 도와드릴게요.'); }
-        return;
-      }
-    }
-    const text = alts[0] || '';
-    if(!text) return;
-    if(V.state === 'wake'){
-      const hit = alts.find(a => WAKE.test(a));
-      if(!hit) return;
-      const rest = hit.replace(WAKE, ' ').replace(/\s+/g, ' ').trim();
-      V.state = 'event'; showState();
-      if(!rest){ say('네, 일정을 도와드릴게요.'); return; }
-      vHandle([rest]);
-      return;
-    }
-    if(V.state === 'pick' || V.state === 'pickAction'){
-      if(intentOf(text) && parseEvent(text, new Date(), {past:true}).found.date){ runIntent(intentOf(text), text); return; }
-      handlePick(text); return;
-    }
-    if(V.state === 'startAsk'){
-      const c = cmdOf(text);
-      if(c === 'no'){ V.state = 'event'; showState(); say('알겠어요.'); return; }
-      V.state = 'event'; showState();
-      if(c === 'yes'){ say('일정을 말씀하세요.'); return; }
-      vHandle([text]); return;
-    }
-    if(V.state === 'editWhat'){ handleEditWhat(text); return; }
-    if(V.state === 'event' && V.pend){
-      const a = V.pend; V.pend = null;
-      if(cmdOf(text) === 'no'){ say('취소했어요.', backToIdle); return; }
-      if(/방금|마지막|이거|이\s*일정/.test(text)){ if(a === 'del') askDelete(); else voiceEditLast(); return; }
-      runIntent('manage', text + (a === 'del' ? ' 삭제' : ' 수정')); return;
-    }
-    if(V.state === 'event' && FIELDISH.test(text.replace(/\s+/g, ''))){
-      const e = items.find(x => x.id === (lastId || newestId()));
-      if(!e){ say('수정할 일정이 없어요. 수정할 일정의 날짜나 제목을 말씀해 주세요.'); return; }
-      startEdit(e); V.target = e; V.retries = 0; V.state = 'editWhat'; showState();
-      handleEditWhat(text); return;
-    }
-    if(V.state === 'event'){ const k = intentOf(text); if(k){ runIntent(k, text); return; } }
-    const cmd = cmdOf(text);
-    if(V.state === 'confirmSave'){
-      const xs = text.replace(/\s+/g, '');
-      if(V.fieldAsk){
-        const f = V.fieldAsk; V.fieldAsk = null;
-        if(cmd === 'no'){ discardDraft(); say('수정하지 않았어요.', backToIdle); return; }
-        if(applyChanges(text, false, f)) say('이렇게 수정할까요? ' + spokenEvent() + '.'); else say('못 알아들었어요. “저장” 또는 “취소”라고 말씀하세요.');
-        return;
-      }
-      if(fieldOnly(text)){ V.fieldAsk = fieldOnly(text); say('어떤 ' + FIELD_LABEL[V.fieldAsk] + ' 바꿀까요?'); return; }
-      if(cmd === 'no' || /^(아니|취소|그만|안\s*해|말고)/.test(xs)){ discardDraft(); say('수정하지 않았어요.', backToIdle); return; }
-      if(cmd === 'yes' || /^(수정|네|응|예|그래|맞|저장|해줘|해요|오케이|좋아|어|어어|웅|음|ㅇㅇ|넹|넵)/.test(xs)){ doEditSave(); return; }
-      if(applyChanges(text, false)){ render(); say('이렇게 수정할까요? ' + spokenEvent() + '.'); return; }
-      say('수정할까요? 네 또는 취소라고 말씀해 주세요.'); return;
-    }
-    if(V.state === 'confirmEdit'){
-      const xs = text.replace(/\s+/g, '');
-      const hasDate = parseEvent(text, new Date(), {past:true}).found.date;
-      if(cmd === 'no' || /^(아니|취소|그만|안\s*해|말고)/.test(xs)){ say('수정하지 않았어요.', backToIdle); return; }
-      if(!hasDate && (cmd === 'yes' || cmd === 'edit' || /수정|변경|바꿔|바꾸|전부|네|응|예|그래|맞|해줘|해요|오케이|좋아/.test(xs) || /^(어|어어|웅|음|ㅇㅇ|넹|넵)$/.test(xs))){
-        startEditVoice(V.target); return;
-      }
-      const k = intentOf(text); if(k){ runIntent(k, text); return; }
-      say('수정할까요? 네 또는 취소라고 말씀해 주세요.'); return;
-    }
-    if(V.state === 'confirmDelete' || V.state === 'confirmBulk'){
-      const xs = text.replace(/\s+/g, '');
-      const hasDate = parseEvent(text, new Date(), {past:true}).found.date;
-      if(cmd === 'no' || /^(아니|취소|그만|안\s*해|말고|삭제\s*하지)/.test(xs)){ say('삭제하지 않았어요.', backToIdle); return; }
-      if(!hasDate && (cmd === 'yes' || cmd === 'del' || /삭제|지워|지우|없애|제거|네|응|예|그래|맞|해줘|해요|오케이|좋아/.test(xs) || ALLRE.test(xs) || /^(어|어어|웅|음|ㅇㅇ|넹|넵)$/.test(xs))){
-        if(V.state === 'confirmBulk') doBulk(); else doDelete();
-        return;
-      }
-      const k = intentOf(text); if(k){ runIntent(k, text); return; }
-    }
-    if((V.state === 'confirm' || V.state === 'addMore') && /삭제|지워|지우|없애|제거/.test(text) && !['yes', 'no', 'del', 'edit'].includes(cmd)){
-      discardDraft(); runIntent('manage', text); return;
-    }
-    if(V.state === 'confirmDelete'){
-      if(cmd === 'yes' || cmd === 'del') doDelete();
-      else say('삭제하지 않았어요.', backToIdle);
-      return;
-    }
-    if(V.state === 'confirmBulk'){
-      if(cmd === 'yes' || cmd === 'del') doBulk();
-      else say('삭제하지 않았어요.', backToIdle);
-      return;
-    }
-    if(V.state === 'confirm' && V.fieldAsk){
-      const f = V.fieldAsk; V.fieldAsk = null;
-      if(cmd === 'no'){ discardDraft(); say('취소했어요.', backToIdle); return; }
-      if(applyChanges(text, false, f)){ say('이렇게 바꿨어요. ' + spokenEvent() + '. 저장할까요?', armTimer); }
-      else say('못 알아들었어요. 저장할까요?', armTimer);
-      return;
-    }
-    if(V.state === 'confirm' && fieldOnly(text)){
-      V.fieldAsk = fieldOnly(text); say('어떤 ' + FIELD_LABEL[V.fieldAsk] + ' 바꿀까요?'); return;
-    }
-    if(V.state === 'confirm'){
-      const rm = text.replace(/[.,!?]+$/, '').trim().match(/^(.+?)\s*(?:취소|빼고|말고)\s*(.+?)\s*$/);
-      if(rm && !/^(저장|수정|확인|네|응|예)$/.test(rm[1].trim())){
-        let X = rm[1].trim(), Y = rm[2].trim(), doIt = /저장/.test(Y);
-        Y = Y.replace(/\s*(?:으로|로)?\s*(?:저장|수정|변경|바꿔)\S*\s*$/, '').replace(/(?:으로|로)$/, '').trim();
-        if(X && Y){
-          if(fLoc.value.includes(X)) fLoc.value = fLoc.value.replace(X, Y);
-          else if(fTitle.value.includes(X)) fTitle.value = fTitle.value.replace(X, Y);
-          else if(fLoc.value) fLoc.value = Y; else fTitle.value = Y;
-          render();
-          if(doIt) doSave('수정해서 저장했어요. ');
-          else say('이렇게 바꿨어요. ' + spokenEvent() + '. 맞으면 네, 아니면 수정이라고 말씀하세요.', armTimer);
-          return;
-        }
-      }
-      if(cmd === 'yes'){ doSave(); return; }
-      if(cmd === 'no' || cmd === 'del'){ discardDraft(); say('취소했어요.', backToIdle); return; }
-      if(cmd === 'edit'){ say('어떻게 수정할까요?', armTimer); return; }
-      if(applyChanges(text, true)){ render(); say('이렇게 바꿨어요. ' + spokenEvent() + '. 저장할까요?', armTimer); }
-      else { say('못 알아들었어요. “저장” 또는 “취소”라고 말씀하세요.', armTimer); }
-      return;
-    }
-    if(V.state === 'addMore'){
-      if(/^(없|아니|괜찮|됐|그대로|저장|네|응|예)/.test(text.replace(/\s+/g, '')) || cmd === 'yes'){ doSave(); return; }
-      if(cmd === 'no'){ discardDraft(); say('취소했어요.', backToIdle); return; }
-      if(applyChanges(text, true)) doSave('추가해서 저장했어요. ');
-      else doSave();
-      return;
-    }
-    if(cmd === 'no'){ discardDraft(); say('취소했어요.', backToIdle); return; }
-    if(cmd === 'yes'){ return; }
-    if(cmd === 'del'){
-      V.pend = 'del'; V.state = 'event'; showState();
-      say('어떤 일정을 삭제할까요? 날짜나 제목을 말씀하세요. 방금 저장한 일정이면 방금 거라고 말하세요.');
-      return;
-    }
-    if(cmd === 'edit'){
-      if(/^(수정|변경|바꿔)/.test(text.replace(/\s+/g, ''))){
-        V.pend = 'edit'; V.state = 'event'; showState();
-        say('어떤 일정을 수정할까요? 날짜나 제목을 말씀하세요. 방금 저장한 일정이면 방금 거라고 말하세요.');
-      } else voiceEditLast();
-      return;
-    }
-    handleEventText(text);
-  }
-
-  function vListen(){
-    if(!V.on || V.talking || V.fatal) return;
-    if(document.visibilityState !== 'visible') return;
-    if(!SR){ vStop('이 화면은 음성 인식을 지원하지 않아요. 크롬으로 열어 보거나 아래 버튼을 눌러 키보드 마이크를 쓰세요.'); return; }
-    try{
-      const r = new SR();
-      V.rec = r;
-      let got = false;
-      r.lang = 'ko-KR'; r.interimResults = true; r.continuous = true; r.maxAlternatives = 3;
-      V.done = 0; clearTimeout(V.timer);
-      r.onstart = () => { V.recLive = true; V.fails = 0; setListening(true); showState(); };
-      r.onresult = e => {
-        if(r !== V.rec) return;
-        if(V.talking){
-          if(!bargeSw.checked) return;
-          const tt = (e.results[e.results.length - 1][0].transcript || '').trim();
-          if(isEcho(tt, V.spoken)) return;
-          V.sayId++; V.talking = false;
-          try{ window.speechSynthesis.cancel(); }catch(_){}
-        } else if(Date.now() - V.spokeEnd < 700){
-          const tt = (e.results[e.results.length - 1][0].transcript || '').trim();
-          if(isEcho(tt, V.spoken)) return;
-        }
-        const idx = e.results.length - 1;
-        if(idx < V.done) return;
-        got = true;
-        const res = e.results[idx];
-        const total = e.results.length;
-        let alts = [];
-        if(total - V.done === 1){ for(let i=0; i<res.length; i++) alts.push(res[i].transcript.trim()); }
-        else { let full = ''; for(let i=V.done; i<total; i++) full += ' ' + (e.results[i][0].transcript || ''); alts = [full.replace(/\s+/g, ' ').trim()]; }
-        const text = alts[0] || '';
-        if(!text) return;
-        clearTimeout(V.cTimer);
-        if(V.state === 'wake') setStatus('들린 말: ' + text + ' (“일정케어”를 기다리는 중)');
-        if(V.state === 'event'){
-          leaveSample(); ta.value = text; fromSentence();
-          setStatus('듣는 중… ' + text);
-        }
-        clearTimeout(V.timer);
-        const fire = () => { if(V.talking || total <= V.done) return; V.done = total; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
-        const hasTime = /\d\s*시|[한두세네다여일아열]\S{0,3}\s*시|시\s*반|오전|오후|정오|저녁|아침|점심/.test(text);
-        const wait = V.state === 'wake' ? 700 : (res.isFinal ? (V.state === 'event' ? (hasTime ? 3000 : 3800) : ((cmdOf(text) === 'yes' || cmdOf(text) === 'no') ? 900 : 2200)) : 3000);
-        V.timer = setTimeout(fire, wait);
-      };
-      r.onerror = e => {
-        const c = e.error;
-        if(c === 'not-allowed'){ V.fatal = true; vStop('마이크 권한이 막혀 있어요 (' + location.protocol + '). 주소창의 자물쇠에서 마이크를 허용하거나 https 주소로 열어야 해요.'); }
-        else if(c === 'service-not-allowed'){ V.fatal = true; vStop('이 브라우저는 음성 인식 서비스를 쓸 수 없어요. 크롬으로 열어 보세요.'); }
-        else if(c === 'audio-capture'){ V.fatal = true; vStop('마이크를 찾을 수 없어요.'); }
-        else if(c === 'network'){ V.fails++; if(V.fails >= 3){ V.fatal = true; vStop('음성 인식 서버에 연결하지 못했어요. 인터넷을 확인해 주세요.'); } }
-      };
-      r.onend = () => {
-        if(r !== V.rec) return;
-        V.recLive = false;
-        if(!V.on || V.talking || V.fatal) return;
-        if(got) V.idle = 0;
-        else if(V.state !== 'wake'){
-          V.idle++;
-          if(V.idle >= 4){
-            V.idle = 0;
-            V.state = 'event'; showState();
-          }
-        }
-        setTimeout(vListen, 250);
-      };
-      r.start();
-    }catch(err){
-      V.fails++;
-      if(V.fails >= 3) vStop('음성 인식을 시작하지 못했어요.');
-      else setTimeout(vListen, 800);
-    }
-  }
-
-  function vStart(state){
-    if(!SR){ fallback('이 화면은 음성 인식을 지원하지 않아요. 크롬으로 열어 보거나 아래 버튼을 눌러 키보드 마이크를 쓰세요.'); wakeSw.checked = false; return; }
-    exitEdit();
-    $('kb').hidden = true;
-    Object.assign(V, {on:true, state, talking:false, retries:0, fails:0, idle:0, fatal:false});
-    setListening(true); showState(); lockOn();
-    Promise.race([primeMic(), new Promise(r => setTimeout(r, 4000))]).then(() => { if(V.on) vListen(); });
-  }
-  async function primeMic(){
-    try{
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-      let st = 'prompt';
-      try{ st = (await navigator.permissions.query({name:'microphone'})).state; }catch(e){}
-      if(st === 'granted') return;
-      const m = await navigator.mediaDevices.getUserMedia({audio:true});
-      m.getTracks().forEach(t => t.stop());
-    }catch(e){}
-  }
-  function vStop(msg){
-    V.on = false; V.talking = false; clearTimeout(V.timer); clearTimeout(V.cTimer);
-    try{ if(V.rec) V.rec.abort(); }catch(e){}
-    try{ if('speechSynthesis' in window) window.speechSynthesis.cancel(); }catch(e){}
-    lockOff();
-    wakeSw.checked = false;
-    setListening(false);
-    if(msg) fallback(msg); else setStatus('눌러서 말하기');
-  }
-
-  async function runDiag(){
-    if(V.on) vStop();
-    const out = $('diag-out');
-    out.hidden = false;
-    const L = [];
-    const push = t => { L.push(t); out.textContent = L.join('
-'); };
-    push('버전: 1110-O');
-    push('주소: ' + location.href.slice(0, 90));
-    push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
-    push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
-    push('브라우저: ' + navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 100));
-    try{
-      const st = await navigator.permissions.query({name:'microphone'});
-      push('마이크 권한 상태: ' + st.state);
-    }catch(e){ push('마이크 권한 상태: 확인 불가'); }
-    try{
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) push('마이크 접근 시험: 지원 안 함');
-      else {
-        const st = await navigator.mediaDevices.getUserMedia({audio:true});
-        st.getTracks().forEach(t => t.stop());
-        push('마이크 접근 시험: 성공');
-      }
-    }catch(e){ push('마이크 접근 시험: 실패 (' + (e && e.name) + ')'); }
-    try{
-      push('소리 시험: “소리 시험입니다”가 들리는지 확인하세요');
-      const vs = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-      push('음성 목록: 전체 ' + vs.length + '개, 한국어 ' + vs.filter(v => /^ko/i.test(v.lang)).length + '개');
-      chime(2);
-      await new Promise(res => {
-        let st = false; const u = new SpeechSynthesisUtterance('소리 시험입니다'); u.lang = 'ko-KR';
-        u.onstart = () => { st = true; }; u.onend = () => { push('음성 재생: ' + (st ? '시작됨' : '시작 안 됨')); res(); }; u.onerror = e => { push('음성 재생 오류: ' + (e && e.error)); res(); };
-        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); setTimeout(() => { if(!st) push('음성 재생: 3초 안에 시작 안 됨 (미디어 볼륨/삼성 음성 설정 확인)'); res(); }, 3000);
-      });
-    }catch(e){ push('소리 시험 실패: ' + e); }
-    if(!SR){ push('점검 끝. 이 화면을 캡처해서 보내 주세요.'); return; }
-    push('음성 인식 시험: “안녕하세요”라고 말해 보세요 (8초)');
-    await new Promise(res => {
-      const r = new SR();
-      r.lang = 'ko-KR'; r.interimResults = false; r.continuous = false;
-      const t0 = Date.now();
-      const ev = n => push('  ' + ((Date.now() - t0) / 1000).toFixed(1) + '초 ' + n);
-      let tm = null;
-      ['start', 'audiostart', 'soundstart', 'speechstart', 'speechend', 'soundend', 'audioend', 'nomatch'].forEach(n => r.addEventListener(n, () => ev(n)));
-      r.onresult = e => ev('결과: ' + e.results[e.results.length - 1][0].transcript);
-      r.onerror = e => ev('오류: ' + e.error);
-      r.onend = () => { ev('end'); clearTimeout(tm); res(); };
-      tm = setTimeout(() => { try{ r.abort(); }catch(e){} ev('시간 초과'); res(); }, 8000);
-      try{ r.start(); }catch(e){ ev('start 실패: ' + (e && e.name)); clearTimeout(tm); res(); }
-    });
-    push('점검 끝. 이 화면을 캡처해서 보내 주세요.');
-  }
-  $('diag').addEventListener('click', runDiag);
-
-  mic.addEventListener('click', () => { if(V.on) vStop(); else vStart('event'); });
-  wakeSw.addEventListener('change', () => { if(wakeSw.checked) vStart('wake'); else vStop(); });
-  document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'visible' && V.on){ lockOn(); vListen(); }
-  });
-
-  /* ---------- 스플래시 화면 수정 ---------- */
-  (function(){
-    const sp = $('splash'); if(!sp) return;
-    
-    // 로고와 애니메이션 요소들
-    const logoSvg = $('splash-logo-svg');
-    const chs = Array.from(sp.querySelectorAll('.ch'));
-    const title = $('splash-title');
-    
-    // 애니메이션 설정
-    const PERIOD = 2200; // 원형 도는 전체 시간
-    const RADIUS = 60; // 도는 반지름
-    
-    // 글자들 원형으로 돌기
-    const t0 = performance.now();
-    let raf;
-    let circleDone = false;
-    
-    function animate(now) {
-      if(circleDone) return;
-      
-      const elapsed = now - t0;
-      let prog = Math.min(elapsed / PERIOD, 1);
-      
-      // Easing (easeOutCubic)
-      const e = 1 - Math.pow(1 - prog, 3);
-      
-      // 4글자가 0도부터 -360도까지 돌기
-      const baseAngle = -e * Math.PI * 2;
-      
-      chs.forEach((ch, i) => {
-        // 각 글자 간격 유지
-        const angle = baseAngle - (i * 0.5); 
-        
-        // 회전 중에는 원을 따라 이동, 끝날 무렵 중심으로 수렴
-        const r = RADIUS * (1 - e); 
-        
-        const x = Math.sin(angle) * r;
-        const y = -Math.cos(angle) * r;
-        
-        // 투명도
-        const op = Math.min(e * 2, 1);
-        
-        ch.style.opacity = op.toFixed(2);
-        ch.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${1 - 0.2*e})`;
-      });
-      
-      if (prog >= 1) {
-        circleDone = true;
-        // 회전이 끝난 후 글자 숨기고 메인 로고/타이틀 표시
-        chs.forEach(ch => ch.style.opacity = '0');
-        logoSvg.style.opacity = '1';
-        title.style.opacity = '1';
-        
-        // 아나운서 톤 멘트 출력 후 넘어가기
-        speakAnnouncerTone();
-        return;
-      }
-      raf = requestAnimationFrame(animate);
-    }
-    
-    // 사용자 터치 잠금 해제 체크용
-    const act = () => { try{ return navigator.userActivation && navigator.userActivation.hasBeenActive; }catch(_){ return false; } };
-    
-    function speakAnnouncerTone() {
-      const text = "일정케어가 일정 등록을 도와드립니다.";
-      
-      const doSpeak = () => {
-         // say(text, afterCallback, asAnnouncerTone)
-         say(text, () => {
-             // 멘트 끝나면 홈 화면으로 전환
-             sp.classList.add('done');
-             setTimeout(() => sp.remove(), 300);
-             if(SR){ setTimeout(() => { try{ if(!V.on) vStart('event'); }catch(e){} }, 300); }
-         }, true);
-      };
-      
-      if(act()) {
-          doSpeak();
+    if(cleanText.includes('삭제')) {
+      if(activeId) {
+        deleteEvent(activeId);
       } else {
-          // 사용자 인터랙션이 없으면 대기 (터치 시 스플래시 종료 및 음성 시작)
-          document.addEventListener('pointerdown', doSpeak, {once:true, capture:true});
-          // 시각적으로 터치를 유도하기 위해 잠시 대기
-          setTimeout(() => {
-             // 혹시라도 터치 없이 진행된다면(데스크탑 환경 등) 시도해봄
-             if(document.body.contains(sp)) doSpeak();
-          }, 4000);
+        speak('삭제할 일정을 먼저 선택해 주세요.');
       }
+      return true;
     }
-    
-    requestAnimationFrame(animate);
-  })();
-
-  /* ---------- 시작 ---------- */
-  function makeGas(url){
-    return { callTool: async (server, tool, input) => {
-      let r;
-      try{ r = await fetch(url + (url.includes('?') ? '&' : '?') + 'a=' + encodeURIComponent(tool) + '&p=' + encodeURIComponent(JSON.stringify(input || {})), {redirect:'follow'}); }
-      catch(_){ throw {code:'gas', message:'인터넷 연결이나 주소를 확인해 주세요.'}; }
-      let j; try{ j = await r.json(); }catch(_){ throw {code:'gas', message:'응답을 읽지 못했어요. 웹 앱 배포 설정(액세스: 모든 사용자)을 확인해 주세요.'}; }
-      if(!j || !j.ok) throw {code:'gas', message: (j && j.error) || '알 수 없는 오류'};
-      return j;
-    } };
-  }
-  function mcpOn(){
-    $('saved-h').textContent = '저장한 일정';
-    $('b-refresh').hidden = false;
-    $('note').textContent = '말하면 구글 캘린더에 바로 저장돼요. 삼성 캘린더가 같은 구글 계정과 동기화돼 있으면 거기에도 나타나요.';
-  }
-  const GAS_KEY = 'ilcare.gas';
-  const gasGet = () => { try{ return localStorage.getItem(GAS_KEY) || ''; }catch(_){ return ''; } };
-  const gasSet = v => { try{ if(v) localStorage.setItem(GAS_KEY, v); else localStorage.removeItem(GAS_KEY); }catch(_){} };
-  const gasMsg = (t, err) => { const m = $('gas-msg'); m.textContent = t; m.style.color = err ? 'var(--err, #C62828)' : ''; };
-  $('gcal-link').addEventListener('click', () => { const b = $('gcal-box'); b.hidden = !b.hidden; $('gas-url').value = gasGet(); gasMsg(gasGet() ? '연결돼 있어요.' : ''); });
-  $('gas-ok').addEventListener('click', async () => {
-    const url = $('gas-url').value.trim();
-    if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\s]+\/exec/.test(url)){ gasMsg('script.google.com으로 시작하고 /exec로 끝나는 주소를 붙여넣어 주세요.', true); return; }
-    gasMsg('연결을 확인하는 중이에요.');
-    try{
-      const g = makeGas(url); await g.callTool('', 'ping', {});
-      gasSet(url); mcp = g; mcpOn(); applyMode(); gasMsg('연결됐어요. 이제 저장하면 구글 캘린더에 들어가요.'); refreshList();
-    }catch(e){ gasMsg(errText(e), true); }
-  });
-  $('gas-off').addEventListener('click', () => { gasSet(''); $('gas-url').value = ''; mcpOff(); applyMode(); loadLocal(); gasMsg('연결을 해제했어요.'); });
-  function mcpOff(){
-    mcp = null;
-    $('saved-h').textContent = '저장한 녹음';
-    $('b-refresh').hidden = true;
-    $('note').textContent = '말하면 이 폰의 목록에 저장돼요. 목록이나 아래 버튼으로 캘린더에 추가하세요. 지도 버튼은 장소를 검색해 열어 주니, 지도 앱에서 길찾기를 누르세요.';
+    if(cleanText.includes('수정')) {
+      speak('어느 일정을 수정할까요? 목록에서 일정을 말해 주시거나 수정할 내용을 말씀하세요.');
+      return true;
+    }
+    return false;
   }
 
-  fromSentence();
-  applyMode();
-  (async () => {
-    let m = null;
-    try{ m = window.claude ? await window.claude.use('mcp') : null; }catch(e){ m = null; }
-    if(!m){
-      const gu = gasGet();
-      if(gu){ mcp = makeGas(gu); mcpOn(); applyMode(); refreshList(); return; }
-      mcpOff(); applyMode(); loadLocal(); return;
+  // 일정 저장
+  function saveEvent() {
+    if(!fTitle.value.trim()) {
+      speak('일정 제목이 없습니다. 제목을 말씀해 주세요.');
+      return;
     }
-    mcp = m;
-    applyMode();
-    refreshList();
-  })();
+    const newEvent = {
+      id: activeId || Date.now(),
+      title: fTitle.value,
+      date: fDate.value,
+      start: fStart.value,
+      end: fEnd.value,
+      loc: fLoc.value
+    };
+
+    if(activeId) {
+      items = items.map(item => item.id === activeId ? newEvent : item);
+      speak('일정이 수정되었습니다.');
+    } else {
+      items.push(newEvent);
+      speak(`제목 ${newEvent.title}, 시간 ${newEvent.start || '종일'}, 장소 ${newEvent.loc || '미정'}으로 일정이 등록되었습니다.`);
+    }
+
+    localStorage.setItem('voice_events', JSON.stringify(items));
+    resetForm();
+    renderList();
+  }
+
+  // 일정 삭제
+  function deleteEvent(id) {
+    items = items.filter(item => item.id !== id);
+    localStorage.setItem('voice_events', JSON.stringify(items));
+    speak('일정이 삭제되었습니다.');
+    resetForm();
+    renderList();
+  }
+
+  function resetForm() {
+    activeId = null;
+    fTitle.value = '';
+    fLoc.value = '';
+    fStart.value = '';
+    fEnd.value = '';
+    fDate.value = ymd(new Date());
+    bSave.textContent = '일정 저장하기';
+    bCancel.hidden = true;
+    bDelete.hidden = true;
+  }
+
+  // 삼성 캘린더 호출용 Intent 생성
+  function getSamsungCalendarIntent(item) {
+    const startParts = (item.start || '09:00').split(':');
+    const startDate = new Date(item.date);
+    startDate.setHours(startParts[0], startParts[1]);
+    const beginTime = startDate.getTime();
+    const endTime = beginTime + 3600000;
+
+    return `intent:#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.item/event;S.title=${encodeURIComponent(item.title)};S.eventLocation=${encodeURIComponent(item.loc)};l.beginTime=${beginTime};l.endTime=${endTime};end`;
+  }
+
+  // 목록 작성
+  function renderList() {
+    listEl.innerHTML = '';
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'row';
+      const intentUrl = getSamsungCalendarIntent(item);
+      li.innerHTML = `
+        <div class="row-title">${item.title}</div>
+        <div class="row-meta">${item.date} ${item.start || '종일'} | 장소: ${item.loc || '없음'}</div>
+        <div class="row-acts">
+          <button class="mini edit-btn">수정</button>
+          <button class="mini danger del-btn">삭제</button>
+          <a class="mini" href="${intentUrl}">삼성 캘린더 추가</a>
+        </div>
+      `;
+      li.querySelector('.edit-btn').onclick = () => {
+        activeId = item.id;
+        setFields(item);
+        bSave.textContent = '수정 완료';
+        bCancel.hidden = false;
+        bDelete.hidden = false;
+      };
+      li.querySelector('.del-btn').onclick = () => deleteEvent(item.id);
+      listEl.appendChild(li);
+    });
+  }
+
+  // 음성 인식 시작 (Web Speech API)
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      isListening = true;
+      micBtn.classList.add('on');
+      statusEl.textContent = '듣고 있습니다...';
+    };
+
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      statusEl.textContent = `인식됨: "${transcript}"`;
+
+      // 1. 명령어인지 판별
+      const isCmd = processCommand(transcript);
+
+      // 2. 명령어 아니면 일정 파싱 수행
+      if(!isCmd) {
+        const parsed = parseSpeech(transcript);
+        setFields(parsed);
+        speak(`제목 ${parsed.title}, 시간 ${parsed.time || '종일'}, 장소 ${parsed.loc || '미정'}으로 등록할까요? 저장하시려면 저장을 말씀하세요.`);
+      }
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      micBtn.classList.remove('on');
+    };
+
+    recognition.onerror = (e) => {
+      statusEl.textContent = '음성 인식 오류가 발생했습니다.';
+      micBtn.classList.remove('on');
+    };
+  }
+
+  micBtn.onclick = () => {
+    if(isListening) {
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
+  };
+
+  bSave.onclick = saveEvent;
+  bCancel.onclick = resetForm;
+  bDelete.onclick = () => activeId && deleteEvent(activeId);
+
+  renderList();
 })();
 </script>
-
-<script>if("serviceWorker" in navigator&&location.protocol==="https:"){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}</script>
 </body>
 </html>
