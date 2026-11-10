@@ -81,7 +81,7 @@ body{
 
 .speak{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
 .speak h1{margin:0;font-size:26px;line-height:1.3;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
-.lead{margin:0 0 14px;color:var(--muted);max-width:30ch;text-wrap:balance}
+.lead{margin:0 0 14px;color:var(--muted);max-width:30ch;text-wrap:balance;word-break:keep-all}
 
 .mic{
   position:relative;width:96px;height:96px;border-radius:50%;border:0;
@@ -210,16 +210,16 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
 </head>
 <body>
 
-<div id="splash" role="img" aria-label="일정케어 불러오는 중"><svg class="logo" viewBox="0 0 72 72" aria-hidden="true"><g fill="none" stroke="#2457F5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 66V44A16 16 0 0 1 46 44V52"/><path d="M58 6V28A16 16 0 0 1 26 28V20"/></g></svg><div class="orb"><span class="ch">일</span><span class="ch">정</span><span class="ch">케</span><span class="ch">어</span></div></div>
+<div id="splash" role="img" aria-label="일정케어 불러오는 중"><svg class="logo" viewBox="0 0 72 72" aria-hidden="true"><defs><clipPath id="Ls"><rect width="36" height="72"/></clipPath><clipPath id="Rs"><rect x="36" width="36" height="72"/></clipPath></defs><g fill="none" style="stroke:#2457F5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g clip-path="url(#Rs)"><g fill="none" style="stroke:#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:#2457F5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Ls)"><g fill="none" style="stroke:#2457F5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Ls)"><g fill="none" style="stroke:#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:#2457F5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g></svg><div class="orb"><span class="ch">일</span><span class="ch">정</span><span class="ch">케</span><span class="ch">어</span></div></div>
 <main class="app">
   <header class="top">
-    <span class="brand"><svg viewBox="0 0 72 72" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 66V44A16 16 0 0 1 46 44V52"/><path d="M58 6V28A16 16 0 0 1 26 28V20"/></g></svg>일정케어</span>
+    <span class="brand"><svg viewBox="0 0 72 72" aria-hidden="true"><defs><clipPath id="Lh"><rect width="36" height="72"/></clipPath><clipPath id="Rh"><rect x="36" width="36" height="72"/></clipPath></defs><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g clip-path="url(#Rh)"><g fill="none" style="stroke:var(--bg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Lh)"><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 9) rotate(90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g><g clip-path="url(#Lh)"><g fill="none" style="stroke:var(--bg)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g><g fill="none" style="stroke:currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(36 63) rotate(-90)"><path d="M0 -16V16H5A27 16 0 0 0 5 -16Z"/></g></g></g></svg>일정케어</span>
     <time id="today" class="mono"></time>
   </header>
 
   <section class="speak" aria-labelledby="speak-h">
-    <h1 id="speak-h">말하면 캘린더에 담겨요</h1>
-    <p class="lead">버튼을 누르고 날짜, 장소, 일정, 시간을 한 문장으로 말해 주세요.</p>
+    <h1 id="speak-h">일정을 말하면 알려드려요</h1>
+    <p class="lead">날짜, 장소, 일정, 시간을 한 문장으로 말해 주세요.</p>
     <button id="mic" class="mic" type="button" aria-pressed="false" aria-label="말하기 시작">
       <span class="gr"></span>
       <svg id="ic-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
@@ -231,27 +231,14 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
       <div class="addbar-b">
         <a id="ab-sam" class="btn ghost" hidden>삼성 캘린더</a>
         <a id="ab-g" class="btn ghost" target="_blank" rel="noopener">Google 캘린더</a>
-        <button id="ab-ics" class="btn ghost" type="button">파일로 받기</button>
       </div>
     </div>
     <button id="kb" class="link" type="button" hidden>키보드의 마이크로 말하기</button>
-    <label class="auto" for="wake">
-      <input id="wake" type="checkbox">
-      <span class="sw" aria-hidden="true"></span>
-      <span>“일정케어”라고 부르면 시작</span>
-    </label>
-    <label class="auto" for="auto">
-      <input id="auto" type="checkbox">
-      <span class="sw" aria-hidden="true"></span>
-      <span>묻지 않고 바로 저장</span>
-    </label>
-    <label class="auto" for="barge">
-      <input id="barge" type="checkbox" checked>
-      <span class="sw" aria-hidden="true"></span>
-      <span>말하는 중에 끼어들기</span>
-    </label>
-    <p class="hint">화면을 켜 둔 상태에서만 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요. “11일 일정 알려줘”, “내일 일정 수정”처럼 말하면 그날 일정을 읽어 줘요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1109-L · 삭제·수정·브리핑 말하기 지원</p>
+    <input id="wake" type="checkbox" hidden>
+    <input id="auto" type="checkbox" hidden>
+    <input id="barge" type="checkbox" hidden checked>
+    <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요. “11일 일정 알려줘”, “내일 일정 수정”처럼 말하면 그날 일정을 읽어 줘요.</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-A · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
     <pre id="diag-out" class="diag" hidden></pre>
   </section>
@@ -262,7 +249,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
       <button id="b-wipe" class="link" type="button">녹음 지우기</button>
     </div>
     <textarea id="said" rows="2" spellcheck="false" autocomplete="off">11월 10일 목과대 탐구관 407호 디지털교육 수업 5시</textarea>
-    <p class="note">마이크 버튼이 안 되면 이 입력창을 누르고 키보드의 마이크로 말하세요. 말을 마치고 키보드를 닫으면 자동 저장 스위치가 켜져 있을 때 바로 저장돼요.</p>
+    <p class="note">마이크 버튼이 안 되면 이 입력창을 누르고 키보드의 마이크로 말하세요.</p>
   </section>
 
   <section id="card" class="card" aria-labelledby="card-h">
@@ -285,7 +272,6 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <div class="actions">
       <button id="b-save" class="btn primary" type="button">캘린더에 저장</button>
       <a id="go" class="btn ghost" target="_blank" rel="noopener" aria-disabled="true" hidden>Google 캘린더로 열기</a>
-      <button id="b-ics" class="btn ghost" type="button" hidden>일정 파일(.ics) 받기</button>
       <button id="b-update" class="btn primary" type="button" hidden>수정 저장</button>
       <button id="b-delete" class="btn danger" type="button" hidden>삭제</button>
       <button id="b-cancel" class="btn ghost" type="button" hidden>수정 취소</button>
@@ -648,7 +634,7 @@ function parseEvent(input, now, opts){
     cardH.textContent = edit ? '일정 수정' : '새 일정';
     bSave.hidden = edit;
     bSave.textContent = mcp ? '캘린더에 저장' : '목록에 저장';
-    go.hidden = !!mcp; $('b-ics').hidden = !!mcp;
+    go.hidden = !!mcp;
     bUpdate.hidden = !edit; bDelete.hidden = !edit; bCancel.hidden = !edit;
     disarmDelete();
     render();
@@ -893,7 +879,6 @@ function parseEvent(input, now, opts){
     addF = f; bar.hidden = false;
     clearTimeout(addT); addT = setTimeout(() => { bar.hidden = true; }, 180000);
   }
-  $('ab-ics').addEventListener('click', () => { if(addF) downloadIcs(addF); });
 
   function listNote(text, isErr){
     listMsg.hidden = false; listMsg.textContent = text; listMsg.classList.toggle('err', !!isErr);
@@ -934,7 +919,6 @@ function parseEvent(input, now, opts){
   }
 
   bSave.addEventListener('click', () => { typed = false; clearTimeout(blurTimer); saveNew(false); });
-  $('b-ics').addEventListener('click', () => { const f = readFields(); if(!f.ok){ toast(f.msg, true); return; } downloadIcs(f); });
   bUpdate.addEventListener('click', saveEdit);
   bCancel.addEventListener('click', () => { mode = 'new'; editId = null; editWasAllDay = false; blankEditor(); applyMode(); });
   bDelete.addEventListener('click', () => {
@@ -950,7 +934,7 @@ function parseEvent(input, now, opts){
   /*VOICE_PURE_START*/
   const WAKE = /(일정|이렇게|일종)\s*(케어|캐어|케이|캐이|께어|카이|카어|게어|계어|care|kare)/i;
   const CMD = {
-    yes: /^(네|예|응|그래|좋아|맞아|확인|저장|등록|오케이|ok)/i,
+    yes: /^(네|넹|넵|예|응|웅|어|어어|그래|좋아|맞아|맞아요|확인|저장|등록|오케이|ok)/i,
     no: /^(아니|취소|그만|종료|닫아)/,
     del: /^(삭제|지워)/,
     edit: /^(수정|다시|바꿔|변경)/
@@ -1061,8 +1045,7 @@ function parseEvent(input, now, opts){
 
   function backToIdle(){
     V.retries = 0; V.pend = null;
-    if(wakeSw.checked){ V.state = 'wake'; showState(); }
-    else vStop();
+    V.state = 'event'; showState();
   }
   function discardDraft(){
     if(mode === 'edit'){ mode = 'new'; editId = null; editWasAllDay = false; applyMode(); }
@@ -1377,6 +1360,10 @@ function parseEvent(input, now, opts){
   }
 
   function vHandle(alts){
+    if(V.state !== 'wake'){
+      alts = alts.map(a => a.replace(/^\s*일정\s*케어[\s,.]*/, '').trim()).filter(Boolean);
+      if(!alts.length){ say('네, 말씀하세요.'); return; }
+    }
     const text = alts[0] || '';
     if(!text) return;
     if(V.state === 'wake'){
@@ -1457,10 +1444,7 @@ function parseEvent(input, now, opts){
       return;
     }
     if(cmd === 'no'){ discardDraft(); say('취소했어요.', backToIdle); return; }
-    if(cmd === 'yes'){
-      if(canSubmit()) doSave(); else say('저장할 내용이 없어요. 일정을 말씀해 주세요.');
-      return;
-    }
+    if(cmd === 'yes'){ return; }
     if(cmd === 'del'){
       V.pend = 'del'; V.state = 'event'; showState();
       say('어떤 일정을 삭제할까요? 날짜나 제목을 말씀하세요. 예를 들어 내일 일정 전부 삭제. 방금 저장한 일정이면 방금 거라고 말하세요.');
@@ -1495,7 +1479,7 @@ function parseEvent(input, now, opts){
           if(isEcho(tt, V.spoken)) return;
           V.sayId++; V.talking = false;
           try{ window.speechSynthesis.cancel(); }catch(_){}
-        } else if(Date.now() - V.spokeEnd < 2500){
+        } else if(Date.now() - V.spokeEnd < 700){
           const tt = (e.results[e.results.length - 1][0].transcript || '').trim();
           if(isEcho(tt, V.spoken)) return;
         }
@@ -1534,8 +1518,7 @@ function parseEvent(input, now, opts){
           V.idle++;
           if(V.idle >= 4){
             V.idle = 0;
-            if(wakeSw.checked){ V.state = 'wake'; showState(); }
-            else { vStop('말씀이 들리지 않아 멈췄어요. 다시 눌러 주세요.'); return; }
+            V.state = 'event'; showState();
           }
         }
         setTimeout(vListen, 250);
@@ -1582,7 +1565,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1109-L');
+    push('버전: 1110-A');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
@@ -1634,9 +1617,12 @@ function parseEvent(input, now, opts){
     const R = 58, RY = 10, PERIOD = slow ? 9000 : 2800;
     let closed = false, raf = 0;
     const t0 = performance.now();
+    let lapDone = false;
     function frame(now){
       if(closed) return;
-      const base = -((now - t0) / PERIOD) * Math.PI * 2;
+      const prog = Math.min(1, (now - t0) / PERIOD);
+      if(prog >= 1) lapDone = true;
+      const base = -prog * Math.PI * 2;
       chs.forEach((c, i) => {
         const a = base - i * 0.47;
         const x = Math.sin(a) * R, y = -Math.cos(a) * RY;
@@ -1645,20 +1631,22 @@ function parseEvent(input, now, opts){
         c.style.opacity = (0.12 + 0.88 * d * d * d).toFixed(2);
         c.style.zIndex = String(Math.round(d * 10));
       });
+      if(lapDone){ gate(); return; }
       raf = requestAnimationFrame(frame);
     }
+    let isLoaded = false, gated = false;
+    function gate(){ if(gated) return; gated = true; Promise.all([loaded, fonts]).then(close); }
     frame(performance.now());
     function close(){
       if(closed) return; closed = true;
       cancelAnimationFrame(raf);
       sp.classList.add('done');
       setTimeout(() => { try{ sp.remove(); }catch(e){} }, 250);
-      if(standalone && fromApp && SR){ setTimeout(() => { try{ if(!V.on) vStart('event'); }catch(e){} }, 300); }
+      if(SR){ setTimeout(() => { try{ if(!V.on) vStart('event'); }catch(e){} }, 300); }
     }
     const loaded = new Promise(res => { if(document.readyState === 'complete') res(); else window.addEventListener('load', res, {once:true}); });
     const fonts = (document.fonts && document.fonts.ready) ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]) : Promise.resolve();
-    Promise.all([loaded, fonts]).then(close);
-    setTimeout(close, 5000);
+    setTimeout(close, 6000);
   })();
 
   /* ---------- 시작 ---------- */
