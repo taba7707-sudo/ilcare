@@ -240,7 +240,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <input id="auto" type="checkbox" hidden>
     <input id="barge" type="checkbox" hidden>
     <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-G · 삭제·수정·브리핑 말하기 지원</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-I · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
     <button id="gcal-link" class="link" type="button">구글 캘린더 연결</button>
     <div id="gcal-box" hidden>
@@ -1036,21 +1036,38 @@ function parseEvent(input, now, opts){
     for(let i = 0; i < t.length - 1; i++){ n++; if(sp.includes(t.substr(i, 2))) hit++; }
     return n > 0 && hit / n >= 0.6;
   }
+  let actx = null;
+  function chime(n){
+    try{
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if(actx.state === 'suspended') actx.resume();
+      for(let i = 0; i < (n || 1); i++){
+        const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * 0.2;
+        o.type = 'sine'; o.frequency.value = i ? 1175 : 880; o.connect(g); g.connect(actx.destination);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+        o.start(t); o.stop(t + 0.18);
+      }
+    }catch(_){}
+  }
+  document.addEventListener('pointerdown', () => { try{ actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if(actx.state === 'suspended') actx.resume(); }catch(_){} }, true);
   function say(text, after){
     V.talking = true; V.spoken = text; const sid = ++V.sayId;
     if(!(bargeSw.checked && V.recLive)){ try{ if(V.rec) V.rec.abort(); }catch(e){} }
+    chime(1);
     return new Promise(res => {
-      let done = false;
+      let done = false, started = false;
       const fin = () => { if(done) return; done = true; res(); };
+      setTimeout(() => { if(!started && !done){ V.ttsSilent = true; chime(2); toast('안내 음성이 막혀 있어요. 화면 위에 글자로 보여드려요.'); } }, 1800);
       try{
         if(!('speechSynthesis' in window)){ fin(); return; }
         const u = new SpeechSynthesisUtterance(text);
         u.lang = 'ko-KR'; u.rate = 1.05; u.volume = 1; u.pitch = 1;
         try{ const vs = window.speechSynthesis.getVoices(); const kv = vs.find(v => /^ko/i.test(v.lang)); if(kv) u.voice = kv; }catch(_){}
+        u.onstart = () => { started = true; V.ttsSilent = false; };
         u.onend = fin;
         u.onerror = ev => { if(ev && ev.error === 'not-allowed'){ V.ttsBlocked = true; V.lastSpoken = text; toast('화면을 한 번 터치하면 안내 음성이 나와요.'); } fin(); };
         window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
+        setTimeout(() => { if(sid === V.sayId && !done){ try{ window.speechSynthesis.resume(); window.speechSynthesis.speak(u); }catch(_){ fin(); } } }, 350);
         setTimeout(fin, Math.min(12000, 1500 + text.length * 260));
       }catch(e){ fin(); }
     }).then(() => {
@@ -1681,7 +1698,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1110-G');
+    push('버전: 1110-I');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
@@ -1698,6 +1715,17 @@ function parseEvent(input, now, opts){
         push('마이크 접근 시험: 성공');
       }
     }catch(e){ push('마이크 접근 시험: 실패 (' + (e && e.name) + ')'); }
+    try{
+      push('소리 시험: “소리 시험입니다”가 들리는지 확인하세요');
+      const vs = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+      push('음성 목록: 전체 ' + vs.length + '개, 한국어 ' + vs.filter(v => /^ko/i.test(v.lang)).length + '개');
+      chime(2);
+      await new Promise(res => {
+        let st = false; const u = new SpeechSynthesisUtterance('소리 시험입니다'); u.lang = 'ko-KR';
+        u.onstart = () => { st = true; }; u.onend = () => { push('음성 재생: ' + (st ? '시작됨' : '시작 안 됨')); res(); }; u.onerror = e => { push('음성 재생 오류: ' + (e && e.error)); res(); };
+        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); setTimeout(() => { if(!st) push('음성 재생: 3초 안에 시작 안 됨 (미디어 볼륨/삼성 음성 설정 확인)'); res(); }, 3000);
+      });
+    }catch(e){ push('소리 시험 실패: ' + e); }
     if(!SR){ push('점검 끝. 이 화면을 캡처해서 보내 주세요.'); return; }
     push('음성 인식 시험: “안녕하세요”라고 말해 보세요 (8초)');
     await new Promise(res => {
