@@ -238,17 +238,9 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <button id="kb" class="link" type="button" hidden>키보드의 마이크로 말하기</button>
     <input id="wake" type="checkbox" hidden>
     <input id="auto" type="checkbox" hidden>
-    <input id="barge" type="checkbox" hidden>
-    <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-P · 삭제·수정·브리핑 말하기 지원</p>
-    <button id="diag" class="link" type="button">마이크 점검</button>
-    <button id="gcal-link" class="link" type="button">구글 캘린더 연결</button>
-    <div id="gcal-box" hidden>
-      <input id="gas-url" type="url" inputmode="url" autocomplete="off" placeholder="웹 앱 주소를 붙여넣으세요" style="font:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);width:100%">
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="gas-ok" class="btn" type="button">연결</button><button id="gas-off" class="btn ghost" type="button">연결 해제</button></div>
-      <p id="gas-msg" class="hint" style="margin:0"></p>
-    </div>
-    <pre id="diag-out" class="diag" hidden></pre>
+    <input id="barge" type="checkbox" hidden checked>
+    <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요. “11일 일정 알려줘”, “내일 일정 수정”처럼 말하면 그날 일정을 읽어 줘요.</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-Q · 삭제·수정·브리핑 말하기 지원</p>
   </section>
 
   <section class="said">
@@ -305,7 +297,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     try{
       var d = document.getElementById('errbar');
       if(!d){ d = document.createElement('div'); d.id = 'errbar'; d.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99;background:#C62828;color:#fff;font:12px/1.4 sans-serif;padding:8px 12px;word-break:break-all'; (document.body || document.documentElement).appendChild(d); }
-      d.textContent = '오류: ' + (e.message || '') + ' (' + String(e.lineno || '') + ') — 이 화면을 캡처해 주세요. 버전 1110-P';
+      d.textContent = '오류: ' + (e.message || '') + ' (' + String(e.lineno || '') + ') — 이 화면을 캡처해 주세요. 버전 1110-Q';
     }catch(_){}
   });
 })();
@@ -1135,7 +1127,7 @@ function parseEvent(input, now, opts){
         V.partial = ''; V.pAsk = 0; V.retries = 0;
         if(!fTitle.value.trim() || fTitle.value.trim() === '새 일정') fTitle.value = '약속';
         render(); askConfirm();
-      }, 2500);
+      }, 1200);
       return;
     }
     V.pTimer = setTimeout(() => {
@@ -1632,7 +1624,15 @@ function parseEvent(input, now, opts){
       return;
     }
     if(cmd === 'no'){ discardDraft(); say('취소했어요.', backToIdle); return; }
-    if(cmd === 'yes'){ return; }
+    if(cmd === 'yes'){
+      const draftOk = validDate(fDate.value) && lastParsed && (lastParsed.found.date || lastParsed.found.time) && (V.partial || fTitle.value.trim());
+      if(draftOk){
+        clearTimeout(V.pTimer); V.partial = ''; V.pAsk = 0;
+        if(!fTitle.value.trim() || fTitle.value.trim() === '새 일정') fTitle.value = '약속';
+        render(); doSave();
+      }
+      return;
+    }
     if(cmd === 'del'){
       V.pend = 'del'; V.state = 'event'; showState();
       say('어떤 일정을 삭제할까요? 날짜나 제목을 말씀하세요. 방금 저장한 일정이면 방금 거라고 말하세요.');
@@ -1648,6 +1648,23 @@ function parseEvent(input, now, opts){
     handleEventText(text);
   }
 
+  /* 안드로이드 크롬은 "내일 12시"를 "내일", "내일 12시", "내일12시"처럼 겹쳐서 여러 번 돌려주므로 겹침을 걷어낸다 */
+  function dedupWords(t){
+    const w = String(t).replace(/\s+/g, ' ').trim().split(' '), o = [];
+    w.forEach(x => { if(!o.length || o[o.length-1] !== x) o.push(x); });
+    return o.join(' ');
+  }
+  function joinResults(e, from){
+    const out = [];
+    for(let i = from; i < e.results.length; i++){
+      const t = dedupWords(e.results[i][0].transcript || ''), n = norm(t);
+      if(!n) continue;
+      while(out.length && n.includes(norm(out[out.length-1]))) out.pop();
+      if(out.length && norm(out[out.length-1]).includes(n)) continue;
+      out.push(t);
+    }
+    return dedupWords(out.join(' '));
+  }
   function vListen(){
     if(!V.on || V.talking || V.fatal) return;
     if(document.visibilityState !== 'visible') return;
@@ -1657,7 +1674,7 @@ function parseEvent(input, now, opts){
       V.rec = r;
       let got = false;
       r.lang = 'ko-KR'; r.interimResults = true; r.continuous = true; r.maxAlternatives = 3;
-      V.done = 0; clearTimeout(V.timer);
+      let sd = 0; clearTimeout(V.timer);
       r.onstart = () => { V.recLive = true; V.fails = 0; setListening(true); showState(); };
       r.onresult = e => {
         if(r !== V.rec) return;
@@ -1672,34 +1689,42 @@ function parseEvent(input, now, opts){
           if(isEcho(tt, V.spoken)) return;
         }
         const idx = e.results.length - 1;
-        if(idx < V.done) return;
+        if(idx < sd) return;
         got = true;
         const res = e.results[idx];
         const total = e.results.length;
         let alts = [];
-        if(total - V.done === 1){ for(let i=0; i<res.length; i++) alts.push(res[i].transcript.trim()); }
-        else { let full = ''; for(let i=V.done; i<total; i++) full += ' ' + (e.results[i][0].transcript || ''); alts = [full.replace(/\s+/g, ' ').trim()]; }
+        if(total - sd === 1){ for(let i=0; i<res.length; i++) alts.push(dedupWords(res[i].transcript.trim())); }
+        else { alts = [joinResults(e, sd)]; }
         const text = alts[0] || '';
         if(!text) return;
         clearTimeout(V.cTimer);
         if(V.state === 'wake') setStatus('들린 말: ' + text + ' (“일정케어”를 기다리는 중)');
         /* "일정케어"만 말한 경우: 입력칸을 채우지 않고 빨리 "네"라고 대답한다 */
         const wakeOnly = new RegExp('^\\s*(?:' + WAKE.source + ')[\\s,.!?]*$', 'i').test(text);
-        if(V.state === 'event' && !wakeOnly){
+        if(V.state === 'event' && !wakeOnly && !cmdOf(text)){
           leaveSample(); ta.value = text; fromSentence();
           setStatus('듣는 중… ' + text);
         }
         clearTimeout(V.timer);
-        const fire = () => { if(V.talking || total <= V.done) return; V.done = total; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
+        const fire = () => { if(V.talking || total <= sd) return; sd = total; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
         const hasTime = /\d\s*시|[한두세네다여일아열]\S{0,3}\s*시|시\s*반|오전|오후|정오|저녁|아침|점심/.test(text);
-        const wait = (V.state === 'wake' || wakeOnly) ? 700 : (res.isFinal ? (V.state === 'event' ? (hasTime ? 3000 : 3800) : ((cmdOf(text) === 'yes' || cmdOf(text) === 'no') ? 900 : 2200)) : 3000);
+        const isCmd = !!cmdOf(text);
+        const wait = res.isFinal
+          ? ((V.state === 'wake' || wakeOnly) ? 300 : (isCmd ? 450 : (V.state === 'event' ? (hasTime ? 1500 : 2600) : 1600)))
+          : ((V.state === 'wake' || wakeOnly) ? 700 : (V.state === 'event' ? 2600 : 1800));
         V.timer = setTimeout(fire, wait);
       };
       r.onerror = e => {
         const c = e.error;
-        if(c === 'not-allowed'){ V.fatal = true; vStop('마이크 권한이 막혀 있어요 (' + location.protocol + '). 주소창의 자물쇠에서 마이크를 허용하거나 https 주소로 열어야 해요.'); }
+        if(c === 'not-allowed'){
+          V.fatal = true;
+          let inFrame = false; try{ inFrame = window.self !== window.top; }catch(_){ inFrame = true; }
+          vStop(inFrame ? '이 미리보기 화면 안에서는 마이크가 막혀 있어요. 같은 파일을 크롬 주소창에서 직접 열어 주세요 (https 주소).' : '마이크 권한이 막혀 있어요 (' + location.protocol + '). 주소창의 자물쇠에서 마이크를 허용하거나 https 주소로 열어야 해요.');
+        }
         else if(c === 'service-not-allowed'){ V.fatal = true; vStop('이 브라우저는 음성 인식 서비스를 쓸 수 없어요. 크롬으로 열어 보세요.'); }
         else if(c === 'audio-capture'){ V.fatal = true; vStop('마이크를 찾을 수 없어요.'); }
+        else if(c !== 'no-speech' && c !== 'aborted' && c !== 'network') setStatus('음성 인식 오류: ' + c, true);
         else if(c === 'network'){ V.fails++; if(V.fails >= 3){ V.fatal = true; vStop('음성 인식 서버에 연결하지 못했어요. 인터넷을 확인해 주세요.'); } }
       };
       r.onend = () => {
@@ -1752,58 +1777,6 @@ function parseEvent(input, now, opts){
     if(msg) fallback(msg); else setStatus('눌러서 말하기');
   }
 
-  async function runDiag(){
-    if(V.on) vStop();
-    const out = $('diag-out');
-    out.hidden = false;
-    const L = [];
-    const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1110-P');
-    push('주소: ' + location.href.slice(0, 90));
-    push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
-    push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
-    push('브라우저: ' + navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 100));
-    try{
-      const st = await navigator.permissions.query({name:'microphone'});
-      push('마이크 권한 상태: ' + st.state);
-    }catch(e){ push('마이크 권한 상태: 확인 불가'); }
-    try{
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) push('마이크 접근 시험: 지원 안 함');
-      else {
-        const st = await navigator.mediaDevices.getUserMedia({audio:true});
-        st.getTracks().forEach(t => t.stop());
-        push('마이크 접근 시험: 성공');
-      }
-    }catch(e){ push('마이크 접근 시험: 실패 (' + (e && e.name) + ')'); }
-    try{
-      push('소리 시험: “소리 시험입니다”가 들리는지 확인하세요');
-      const vs = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-      push('음성 목록: 전체 ' + vs.length + '개, 한국어 ' + vs.filter(v => /^ko/i.test(v.lang)).length + '개');
-      chime(2);
-      await new Promise(res => {
-        let st = false; const u = new SpeechSynthesisUtterance('소리 시험입니다'); u.lang = 'ko-KR';
-        u.onstart = () => { st = true; }; u.onend = () => { push('음성 재생: ' + (st ? '시작됨' : '시작 안 됨')); res(); }; u.onerror = e => { push('음성 재생 오류: ' + (e && e.error)); res(); };
-        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); setTimeout(() => { if(!st) push('음성 재생: 3초 안에 시작 안 됨 (미디어 볼륨/삼성 음성 설정 확인)'); res(); }, 3000);
-      });
-    }catch(e){ push('소리 시험 실패: ' + e); }
-    if(!SR){ push('점검 끝. 이 화면을 캡처해서 보내 주세요.'); return; }
-    push('음성 인식 시험: “안녕하세요”라고 말해 보세요 (8초)');
-    await new Promise(res => {
-      const r = new SR();
-      r.lang = 'ko-KR'; r.interimResults = false; r.continuous = false;
-      const t0 = Date.now();
-      const ev = n => push('  ' + ((Date.now() - t0) / 1000).toFixed(1) + '초 ' + n);
-      let tm = null;
-      ['start', 'audiostart', 'soundstart', 'speechstart', 'speechend', 'soundend', 'audioend', 'nomatch'].forEach(n => r.addEventListener(n, () => ev(n)));
-      r.onresult = e => ev('결과: ' + e.results[e.results.length - 1][0].transcript);
-      r.onerror = e => ev('오류: ' + e.error);
-      r.onend = () => { ev('end'); clearTimeout(tm); res(); };
-      tm = setTimeout(() => { try{ r.abort(); }catch(e){} ev('시간 초과'); res(); }, 8000);
-      try{ r.start(); }catch(e){ ev('start 실패: ' + (e && e.name)); clearTimeout(tm); res(); }
-    });
-    push('점검 끝. 이 화면을 캡처해서 보내 주세요.');
-  }
-  $('diag').addEventListener('click', runDiag);
 
   mic.addEventListener('click', () => { if(V.on) vStop(); else vStart('event'); });
   wakeSw.addEventListener('change', () => { if(wakeSw.checked) vStart('wake'); else vStop(); });
@@ -1821,24 +1794,31 @@ function parseEvent(input, now, opts){
     const R = 58, RY = 10, PERIOD = slow ? 9000 : 2800;
     let closed = false, raf = 0;
     const t0 = performance.now();
-    let lapDone = false, lapT0 = 0;
+    let lapDone = false, lapT0 = 0, settleT0 = 0;
     const LAP = slow ? 9000 : 3600;
     function frame(now){
       if(closed) return;
       /* 터치 전에는 계속 돌고, 터치하면 안내 음성과 함께 정확히 한 바퀴만 돈다 */
       let prog;
       if(!lapT0){ prog = ((now - t0) / PERIOD) % 1; }
-      else { prog = Math.min(1, (now - lapT0) / LAP); if(prog >= 1) lapDone = true; }
+      else { prog = Math.min(1, (now - lapT0) / LAP); if(prog >= 1 && !lapDone){ lapDone = true; settleT0 = now; } }
+      const SETTLE = 500, HOLD = 900;
+      const k = lapDone ? Math.min(1, (now - settleT0) / SETTLE) : 0;
+      const e = k * k * (3 - 2 * k);
       const base = -prog * Math.PI * 2;
       chs.forEach((c, i) => {
         const a = base - i * 0.47;
-        const x = Math.sin(a) * R, y = -Math.cos(a) * RY;
+        const x0 = Math.sin(a) * R, y0 = -Math.cos(a) * RY;
         const d = (1 - Math.cos(a)) / 2;
-        c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + (0.78 + 0.32 * d).toFixed(3) + ')';
-        c.style.opacity = (0.12 + 0.88 * d * d * d).toFixed(2);
+        const sc0 = 0.78 + 0.32 * d, op0 = 0.12 + 0.88 * d * d * d;
+        /* 한 바퀴를 돈 뒤에는 글자가 화면 정중앙에 "일정케어"로 가지런히 모인다 */
+        const x = x0 + ((i - 1.5) * 34 - x0) * e, y = y0 * (1 - e);
+        const sc = sc0 + (1.12 - sc0) * e, op = op0 + (1 - op0) * e;
+        c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')';
+        c.style.opacity = op.toFixed(2);
         c.style.zIndex = String(Math.round(d * 10));
       });
-      if(lapDone){ gate(); return; }
+      if(lapDone && now - settleT0 >= SETTLE + HOLD){ gate(); return; }
       raf = requestAnimationFrame(frame);
     }
     let isLoaded = false, gated = false;
@@ -1932,18 +1912,6 @@ function parseEvent(input, now, opts){
   const GAS_KEY = 'ilcare.gas';
   const gasGet = () => { try{ return localStorage.getItem(GAS_KEY) || ''; }catch(_){ return ''; } };
   const gasSet = v => { try{ if(v) localStorage.setItem(GAS_KEY, v); else localStorage.removeItem(GAS_KEY); }catch(_){} };
-  const gasMsg = (t, err) => { const m = $('gas-msg'); m.textContent = t; m.style.color = err ? 'var(--err, #C62828)' : ''; };
-  $('gcal-link').addEventListener('click', () => { const b = $('gcal-box'); b.hidden = !b.hidden; $('gas-url').value = gasGet(); gasMsg(gasGet() ? '연결돼 있어요.' : ''); });
-  $('gas-ok').addEventListener('click', async () => {
-    const url = $('gas-url').value.trim();
-    if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\s]+\/exec/.test(url)){ gasMsg('script.google.com으로 시작하고 /exec로 끝나는 주소를 붙여넣어 주세요.', true); return; }
-    gasMsg('연결을 확인하는 중이에요.');
-    try{
-      const g = makeGas(url); await g.callTool('', 'ping', {});
-      gasSet(url); mcp = g; mcpOn(); applyMode(); gasMsg('연결됐어요. 이제 저장하면 구글 캘린더에 들어가요.'); refreshList();
-    }catch(e){ gasMsg(errText(e), true); }
-  });
-  $('gas-off').addEventListener('click', () => { gasSet(''); $('gas-url').value = ''; mcpOff(); applyMode(); loadLocal(); gasMsg('연결을 해제했어요.'); });
   function mcpOff(){
     mcp = null;
     $('saved-h').textContent = '저장한 녹음';
@@ -1957,8 +1925,6 @@ function parseEvent(input, now, opts){
     let m = null;
     try{ m = window.claude ? await window.claude.use('mcp') : null; }catch(e){ m = null; }
     if(!m){
-      const gu = gasGet();
-      if(gu){ mcp = makeGas(gu); mcpOn(); applyMode(); refreshList(); return; }
       mcpOff(); applyMode(); loadLocal(); return;
     }
     mcp = m;
