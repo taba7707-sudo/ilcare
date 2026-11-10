@@ -240,7 +240,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <input id="auto" type="checkbox" hidden>
     <input id="barge" type="checkbox" hidden>
     <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-I · 삭제·수정·브리핑 말하기 지원</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-K · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
     <button id="gcal-link" class="link" type="button">구글 캘린더 연결</button>
     <div id="gcal-box" hidden>
@@ -1049,6 +1049,20 @@ function parseEvent(input, now, opts){
       }
     }catch(_){}
   }
+  (function(){
+    const bar = document.createElement('button');
+    bar.type = 'button'; bar.id = 'unlock'; bar.textContent = '🔊 화면을 한 번 터치하면 안내 음성이 켜져요';
+    bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;padding:14px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.25)';
+    const active = () => { try{ return navigator.userActivation && navigator.userActivation.hasBeenActive; }catch(_){ return false; } };
+    const unlock = () => {
+      try{ const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'ko-KR'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }catch(_){}
+      bar.remove(); V.unlocked = true;
+    };
+    document.addEventListener('pointerdown', () => { if(!V.unlocked) unlock(); }, true);
+    document.addEventListener('keydown', () => { if(!V.unlocked) unlock(); }, true);
+    const show = () => { if(!V.unlocked && !active()) document.body.appendChild(bar); else if(active()) V.unlocked = true; };
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show); else show();
+  })();
   document.addEventListener('pointerdown', () => { try{ actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if(actx.state === 'suspended') actx.resume(); }catch(_){} }, true);
   function say(text, after){
     V.talking = true; V.spoken = text; const sid = ++V.sayId;
@@ -1067,7 +1081,12 @@ function parseEvent(input, now, opts){
         u.onend = fin;
         u.onerror = ev => { if(ev && ev.error === 'not-allowed'){ V.ttsBlocked = true; V.lastSpoken = text; toast('화면을 한 번 터치하면 안내 음성이 나와요.'); } fin(); };
         window.speechSynthesis.cancel();
-        setTimeout(() => { if(sid === V.sayId && !done){ try{ window.speechSynthesis.resume(); window.speechSynthesis.speak(u); }catch(_){ fin(); } } }, 350);
+        const t0 = Date.now();
+        const go = () => {
+          if(sid !== V.sayId || done) return;
+          setTimeout(() => { if(sid !== V.sayId || done) return; try{ window.speechSynthesis.resume(); window.speechSynthesis.speak(u); }catch(_){ fin(); } }, 350);
+        };
+        go();
         setTimeout(fin, Math.min(12000, 1500 + text.length * 260));
       }catch(e){ fin(); }
     }).then(() => {
@@ -1633,7 +1652,9 @@ function parseEvent(input, now, opts){
         }
         clearTimeout(V.timer);
         const fire = () => { if(V.talking || total <= V.done) return; V.done = total; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
-        V.timer = setTimeout(fire, V.state === 'wake' ? 700 : (res.isFinal ? 2000 : 3000));
+        const hasTime = /\d\s*시|[한두세네다여일아열]\S{0,3}\s*시|시\s*반|오전|오후|정오|저녁|아침|점심/.test(text);
+        const wait = V.state === 'wake' ? 700 : (res.isFinal ? (V.state === 'event' && !hasTime ? 3800 : 2000) : 3000);
+        V.timer = setTimeout(fire, wait);
       };
       r.onerror = e => {
         const c = e.error;
@@ -1698,7 +1719,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1110-I');
+    push('버전: 1110-K');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
