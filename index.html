@@ -240,7 +240,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <input id="auto" type="checkbox" hidden>
     <input id="barge" type="checkbox" hidden>
     <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-O · 삭제·수정·브리핑 말하기 지원</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-P · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
     <button id="gcal-link" class="link" type="button">구글 캘린더 연결</button>
     <div id="gcal-box" hidden>
@@ -305,7 +305,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     try{
       var d = document.getElementById('errbar');
       if(!d){ d = document.createElement('div'); d.id = 'errbar'; d.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99;background:#C62828;color:#fff;font:12px/1.4 sans-serif;padding:8px 12px;word-break:break-all'; (document.body || document.documentElement).appendChild(d); }
-      d.textContent = '오류: ' + (e.message || '') + ' (' + String(e.lineno || '') + ') — 이 화면을 캡처해 주세요. 버전 1110-O';
+      d.textContent = '오류: ' + (e.message || '') + ' (' + String(e.lineno || '') + ') — 이 화면을 캡처해 주세요. 버전 1110-P';
     }catch(_){}
   });
 })();
@@ -957,7 +957,7 @@ function parseEvent(input, now, opts){
 
   /* ---------- 음성: “일정케어” 호출, 말로 저장·취소·삭제·수정 ---------- */
   /*VOICE_PURE_START*/
-  const WAKE = /(일정|이렇게|일종)\s*(케어|캐어|케이|캐이|께어|카이|카어|게어|계어|care|kare)/i;
+  const WAKE = /(일정|이렇게|일종|일전|인정|이정)\s*(케어|캐어|케이|캐이|께어|카이|카어|게어|계어|케얼|캐얼|care|kare)/i;
   const CMD = {
     yes: /^(네|넹|넵|예|응|웅|어|어어|그래|좋아|맞아|맞아요|확인|저장|등록|오케이|ok)/i,
     no: /^(아니|취소|그만|종료|닫아)/,
@@ -1012,7 +1012,7 @@ function parseEvent(input, now, opts){
     const t = {
       wake: '“일정케어”라고 불러 보세요. 화면은 켜 두세요.',
       event: '일정을 말씀하세요.',
-      confirm: '저장할까요? “저장” 또는 “취소”. 추가할 내용은 그대로 말씀하세요.',
+      confirm: '등록할까요? “네”, “저장”, “어” 또는 “취소”라고 말씀하세요.',
       addMore: '추가할 내용을 말씀하세요. 없으면 곧 저장해요.',
       confirmBulk: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
       startAsk: '일정을 등록할까요? “네”라고 말씀하세요.',
@@ -1078,17 +1078,29 @@ function parseEvent(input, now, opts){
     return new Promise(res => {
       let done = false, started = false;
       const fin = () => { if(done) return; done = true; res(); };
-      setTimeout(() => { if(!started && !done){ V.ttsSilent = true; chime(2); toast('안내 음성이 막혀 있어요. 화면 위에 글자로 보여드려요.'); } }, 1800);
+      setTimeout(() => { if(!started && !done){ V.ttsSilent = true; chime(2); toast('안내 음성이 막혀 있어요. 화면 위에 글자로 보여드려요.'); } }, 2600);
       try{
         if(!('speechSynthesis' in window)){ fin(); return; }
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'ko-KR'; u.rate = 1.05;
-        u.onstart = () => { started = true; V.ttsSilent = false; };
-        u.onend = fin;
-        u.onerror = fin;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
-        setTimeout(fin, Math.min(12000, 1500 + text.length * 260));
+        /* 마이크를 끄고 cancel() 한 직후에 바로 speak() 하면 크롬이 통째로 무시하는 경우가 있어서 잠시 쉰 뒤 말한다 */
+        try{ window.speechSynthesis.cancel(); }catch(_){}
+        setTimeout(() => {
+          if(done || sid !== V.sayId){ fin(); return; }
+          try{
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'ko-KR'; u.rate = 1.0;
+            try{
+              const vs = window.speechSynthesis.getVoices().filter(v => /^ko/i.test(v.lang));
+              const f = vs.find(v => /female|yuna|sun-?hi|heami|seoyeon|여성/i.test(v.name)) || vs[0];
+              if(f) u.voice = f;
+            }catch(_){}
+            V.utt = u; /* 말하는 중에 가비지 수집되어 onend가 안 오는 문제 방지 */
+            u.onstart = () => { started = true; V.ttsSilent = false; };
+            u.onend = fin;
+            u.onerror = fin;
+            window.speechSynthesis.speak(u);
+          }catch(_){ fin(); }
+        }, 300);
+        setTimeout(fin, Math.min(14000, 2200 + text.length * 260));
       }catch(e){ fin(); }
     }).then(() => {
       if(sid !== V.sayId) return;
@@ -1140,14 +1152,28 @@ function parseEvent(input, now, opts){
     V.cTimer = setTimeout(() => {
       if(!V.on || V.talking) return;
       if(V.state === 'confirm'){
-        if(!V.nag){ V.nag = 1; say('저장할까요? “저장” 또는 “취소”라고 말씀하세요.', armTimer); }
+        if(!V.nag){ V.nag = 1; say('등록할까요? “네” 또는 “취소”라고 말씀하세요.', armTimer); }
         else { V.nag = 0; discardDraft(); say('저장하지 않고 닫았어요.', backToIdle); }
       }
     }, 10000);
   }
+  /* "평광 오후 3시 일정 등록할까요?" 형태. 오늘이면 날짜는 말하지 않는다 */
+  function spokenConfirm(){
+    const title = fTitle.value.trim() || '일정';
+    let t = '';
+    const v = fDate.value;
+    if(validDate(v)){
+      const [y, mo, d] = v.split('-').map(Number);
+      if(ymd(new Date(y, mo-1, d)) !== ymd(new Date())) t += mo + '월 ' + d + '일 ';
+    }
+    t += title;
+    if(fStart.value) t += ' ' + spokenTime(fStart.value);
+    if(fLoc.value.trim()) t += ', 장소는 ' + fLoc.value.trim() + ',';
+    return t + ' 일정 등록할까요?';
+  }
   function askConfirm(){
     V.state = 'confirm'; V.nag = 0; showState();
-    say(spokenEvent() + '. 맞나요? 맞으면 네, 아니면 수정이라고 말씀하세요.', armTimer);
+    say(spokenConfirm(), armTimer);
   }
 
   // 말한 내용을 지금 고치는 중인 일정에 반영 (제목·장소·날짜·시간). free=true면 나머지 말은 제목에 덧붙임
@@ -1657,14 +1683,16 @@ function parseEvent(input, now, opts){
         if(!text) return;
         clearTimeout(V.cTimer);
         if(V.state === 'wake') setStatus('들린 말: ' + text + ' (“일정케어”를 기다리는 중)');
-        if(V.state === 'event'){
+        /* "일정케어"만 말한 경우: 입력칸을 채우지 않고 빨리 "네"라고 대답한다 */
+        const wakeOnly = new RegExp('^\\s*(?:' + WAKE.source + ')[\\s,.!?]*$', 'i').test(text);
+        if(V.state === 'event' && !wakeOnly){
           leaveSample(); ta.value = text; fromSentence();
           setStatus('듣는 중… ' + text);
         }
         clearTimeout(V.timer);
         const fire = () => { if(V.talking || total <= V.done) return; V.done = total; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
         const hasTime = /\d\s*시|[한두세네다여일아열]\S{0,3}\s*시|시\s*반|오전|오후|정오|저녁|아침|점심/.test(text);
-        const wait = V.state === 'wake' ? 700 : (res.isFinal ? (V.state === 'event' ? (hasTime ? 3000 : 3800) : ((cmdOf(text) === 'yes' || cmdOf(text) === 'no') ? 900 : 2200)) : 3000);
+        const wait = (V.state === 'wake' || wakeOnly) ? 700 : (res.isFinal ? (V.state === 'event' ? (hasTime ? 3000 : 3800) : ((cmdOf(text) === 'yes' || cmdOf(text) === 'no') ? 900 : 2200)) : 3000);
         V.timer = setTimeout(fire, wait);
       };
       r.onerror = e => {
@@ -1730,7 +1758,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1110-O');
+    push('버전: 1110-P');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
@@ -1793,11 +1821,14 @@ function parseEvent(input, now, opts){
     const R = 58, RY = 10, PERIOD = slow ? 9000 : 2800;
     let closed = false, raf = 0;
     const t0 = performance.now();
-    let lapDone = false;
+    let lapDone = false, lapT0 = 0;
+    const LAP = slow ? 9000 : 3600;
     function frame(now){
       if(closed) return;
-      const prog = Math.min(1, (now - t0) / PERIOD);
-      if(prog >= 1) lapDone = true;
+      /* 터치 전에는 계속 돌고, 터치하면 안내 음성과 함께 정확히 한 바퀴만 돈다 */
+      let prog;
+      if(!lapT0){ prog = ((now - t0) / PERIOD) % 1; }
+      else { prog = Math.min(1, (now - lapT0) / LAP); if(prog >= 1) lapDone = true; }
       const base = -prog * Math.PI * 2;
       chs.forEach((c, i) => {
         const a = base - i * 0.47;
@@ -1833,7 +1864,7 @@ function parseEvent(input, now, opts){
     function intro(){
       if(introStarted) return; introStarted = true;
       music();
-      const text = '일정케어가 당신의 일정을 관리해 드립니다.';
+      const text = '일정케어가 당신의 일정을 도와드립니다.';
       let started = false, finished = false;
       const end = () => { if(finished) return; finished = true; introRes(); };
       const speak = (withVoice) => {
@@ -1849,7 +1880,25 @@ function parseEvent(input, now, opts){
       setTimeout(end, 6500);
     }
     const act = () => { try{ return navigator.userActivation && navigator.userActivation.hasBeenActive; }catch(_){ return false; } };
-    if(act()) intro(); else document.addEventListener('pointerdown', () => intro(), {once:true, capture:true});
+    let tapHint = null;
+    function begin(){
+      if(lapT0) return;
+      lapT0 = performance.now();
+      if(tapHint){ try{ tapHint.remove(); }catch(_){} tapHint = null; }
+      intro();
+      setTimeout(close, 12000);
+    }
+    if(act()) begin();
+    else {
+      /* 브라우저는 터치 없이는 음성 안내를 막으므로, 한 번 터치하면 시작하도록 안내 */
+      tapHint = document.createElement('p');
+      tapHint.textContent = '화면을 터치하면 시작해요';
+      tapHint.style.cssText = 'margin:0;font-size:14px;font-weight:500;color:#2457F5;opacity:.75';
+      sp.appendChild(tapHint);
+      const go = () => begin();
+      document.addEventListener('pointerdown', go, {once:true, capture:true});
+      document.addEventListener('keydown', go, {once:true, capture:true});
+    }
     function gate(){ if(gated) return; gated = true; Promise.all([loaded, fonts, introStarted ? introDone : Promise.resolve()]).then(close); }
     frame(performance.now());
     function close(){
@@ -1861,7 +1910,7 @@ function parseEvent(input, now, opts){
     }
     const loaded = new Promise(res => { if(document.readyState === 'complete') res(); else window.addEventListener('load', res, {once:true}); });
     const fonts = (document.fonts && document.fonts.ready) ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]) : Promise.resolve();
-    setTimeout(close, 8000);
+    setTimeout(() => { if(!lapT0) close(); }, 25000);
   })();
 
   /* ---------- 시작 ---------- */
