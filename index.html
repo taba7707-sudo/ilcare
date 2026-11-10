@@ -238,7 +238,7 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <input id="auto" type="checkbox" hidden>
     <input id="barge" type="checkbox" hidden checked>
     <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-D · 삭제·수정·브리핑 말하기 지원</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-E · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
     <pre id="diag-out" class="diag" hidden></pre>
   </section>
@@ -996,6 +996,7 @@ function parseEvent(input, now, opts){
       confirm: '저장할까요? “저장” 또는 “취소”. 추가할 내용은 그대로 말씀하세요.',
       addMore: '추가할 내용을 말씀하세요. 없으면 곧 저장해요.',
       confirmBulk: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
+      startAsk: '일정을 등록할까요? “네”라고 말씀하세요.',
       confirmSave: '이렇게 수정할까요? “네” 또는 “취소”라고 말하세요.',
       confirmEdit: '수정할까요? “네” 또는 “취소”라고 말하세요.',
       confirmDelete: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
@@ -1050,7 +1051,7 @@ function parseEvent(input, now, opts){
   }
 
   function backToIdle(){
-    V.retries = 0; V.pend = null; V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
+    V.fieldAsk = null; V.retries = 0; V.pend = null; V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
     V.state = 'event'; showState();
   }
   function discardDraft(){
@@ -1101,35 +1102,72 @@ function parseEvent(input, now, opts){
   }
 
   // 말한 내용을 지금 고치는 중인 일정에 반영 (제목·장소·날짜·시간). free=true면 나머지 말은 제목에 덧붙임
-  function applyChanges(text, free){
-    const tail = '(?:\\s*(?:으로|로))?(?:\\s*(?:변경|수정|바꿔|바꾸|해)\\S*)?\\s*$';
-    const tm = text.match(new RegExp('제목(?:은|을|는)?\\s*(.+?)' + tail));
-    const lm = text.match(new RegExp('장소(?:는|를|은)?\\s*(.+?)' + tail));
-    const p = parseEvent(text, new Date());
+  const FIELDS = {제목:'title', 이름:'title', 일정명:'title', 장소:'loc', 위치:'loc', 시간:'time', 시각:'time', 날짜:'date'};
+  const FIELD_LABEL = {title:'제목으로', loc:'장소로', time:'시간으로', date:'날짜로'};
+  const CHG = '(?:변경|수정|바꿔|바꾸|바꿀|고쳐|옮겨|정정)';
+  const FIELD_ONLY = new RegExp('^(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:을|를|은|는)?' + CHG + '\\S*$');
+  const FIELDISH = new RegExp('^(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:을|를|은|는)?\\s*' + CHG);
+  const fieldOnly = text => { const m = String(text).replace(/\s+/g, '').match(FIELD_ONLY); return m ? FIELDS[m[1]] : null; };
+  function applyChanges(text, free, force){
+    const t = String(text).trim().replace(/[.,!?]+$/, '');
+    const cleanV = v => String(v).replace(new RegExp('\\s*(?:으로|로)?\\s*' + CHG + '\\S*\\s*$'), '').replace(/\s*(?:해\s*줘|해주세요|해요|해)$/, '').replace(/(?:으로|로)$/, '').trim();
+    const isPlace = v => /(\d+호|\d+동|관|실|센터|홀|강당|캠퍼스|도서관|체육관|카페|병원|본관|별관|학교|대학교|학원|공원|회관|역|터미널)$/.test(String(v).trim().split(/\s+/).pop());
+    const setTime = (p, src) => {
+      let dur = 60;
+      if(fStart.value && fEnd.value){
+        const a = fStart.value.split(':').map(Number), b = fEnd.value.split(':').map(Number), dd = b[0]*60 + b[1] - (a[0]*60 + a[1]);
+        if(dd > 0) dur = dd;
+      }
+      fStart.value = p.start;
+      if(/부터|~|-/.test(src)) fEnd.value = p.end;
+      else { const q = p.start.split(':').map(Number); fEnd.value = hm(Math.min(q[0]*60 + q[1] + dur, 1439)); }
+    };
+    const setField = (f, raw) => {
+      const v = cleanV(raw); if(!v) return false;
+      if(f === 'loc'){ fLoc.value = v; return true; }
+      if(f === 'title'){ fTitle.value = v; return true; }
+      const p = parseEvent(v, new Date());
+      if(f === 'date' && p.found.date){ fDate.value = ymd(p.date); return true; }
+      if(f === 'time' && p.found.time){ setTime(p, v); return true; }
+      return false;
+    };
+    if(force){ const ok = setField(force, t); if(ok) render(); return ok; }
+    let m = t.match(new RegExp('^(.+?)(?:으로|로)\\s*(제목|이름|일정명|장소|위치|시간|시각|날짜)\\s*' + CHG + '\\S*$'));
+    if(m && setField(FIELDS[m[2]], m[1])){ render(); return true; }
     let changed = false;
-    if(tm && tm[1].trim()){ fTitle.value = tm[1].trim(); changed = true; }
-    if(lm && lm[1].trim()){ fLoc.value = lm[1].trim(); changed = true; }
-    if(!tm && !lm){
-      if(p.found.date){ fDate.value = ymd(p.date); changed = true; }
-      if(p.found.time){
-        let dur = 60;
-        if(fStart.value && fEnd.value){
-          const a = fStart.value.split(':').map(Number), b = fEnd.value.split(':').map(Number), dd = b[0]*60 + b[1] - (a[0]*60 + a[1]);
-          if(dd > 0) dur = dd;
-        }
-        fStart.value = p.start;
-        if(/부터|~|-/.test(text)) fEnd.value = p.end;
-        else { const q = p.start.split(':').map(Number); fEnd.value = hm(Math.min(q[0]*60 + q[1] + dur, 1439)); }
+    const fm = [...t.matchAll(/(제목|이름|일정명|장소|위치|시간|시각|날짜)(?:은|는|을|를)?\s*/g)];
+    if(fm.length){
+      fm.forEach((x, k) => {
+        const end = k + 1 < fm.length ? fm[k+1].index : t.length;
+        const v = t.slice(x.index + x[0].length, end);
+        if(/^\s*(?:변경|수정|바꿔|바꾸|바꿀|고쳐|옮겨|정정)/.test(v)) return;
+        if(setField(FIELDS[x[1]], v)) changed = true;
+      });
+      if(changed){ render(); return true; }
+    }
+    const p = parseEvent(t, new Date());
+    if(p.found.date){ fDate.value = ymd(p.date); changed = true; }
+    if(p.found.time){ setTime(p, t); changed = true; }
+    if(!changed){
+      const rm = t.match(new RegExp('^(.+?)(?:으로|로)?\\s*' + CHG + '\\S*(?:\\s*(?:해\\s*줘|해주세요|해요))?$'));
+      if(rm && rm[1].trim() && !/^(제목|이름|일정명|장소|위치|시간|시각|날짜)$/.test(rm[1].trim())){
+        const v = cleanV(rm[1]); if(isPlace(v)) fLoc.value = v; else fTitle.value = v; changed = true;
+      }
+    }
+    if(free && !changed){
+      if(p.location){ fLoc.value = p.location; changed = true; }
+      const tt = (p.title || '').trim();
+      if(tt && tt !== '새 일정'){
+        const cur = fTitle.value.trim();
+        fTitle.value = (!cur || cur === '새 일정' || cur === '약속') ? tt : (cur.includes(tt) ? cur : cur + ' ' + tt);
         changed = true;
       }
-      if(free){
-        if(p.location){ fLoc.value = p.location; changed = true; }
-        const t = (p.title || '').trim();
-        if(t && t !== '새 일정'){
-          const cur = fTitle.value.trim();
-          fTitle.value = (!cur || cur === '새 일정' || cur === '약속') ? t : (cur.includes(t) ? cur : cur + ' ' + t);
-          changed = true;
-        }
+    } else if(free && changed){
+      if(p.location){ fLoc.value = p.location; }
+      const tt = (p.title || '').trim();
+      if(tt && tt !== '새 일정'){
+        const cur = fTitle.value.trim();
+        fTitle.value = (!cur || cur === '새 일정' || cur === '약속') ? tt : (cur.includes(tt) ? cur : cur + ' ' + tt);
       }
     }
     if(changed) render();
@@ -1365,7 +1403,10 @@ function parseEvent(input, now, opts){
       lastId = editId; V.state = 'confirmDelete'; showState();
       say((fTitle.value.trim() || '일정') + ' 일정을 삭제할까요?'); return;
     }
-    const changed = applyChanges(text, false);
+    let changed;
+    if(V.fieldAsk){ const f = V.fieldAsk; V.fieldAsk = null; changed = applyChanges(text, false, f); }
+    else if(fieldOnly(text)){ V.fieldAsk = fieldOnly(text); say('어떤 ' + FIELD_LABEL[V.fieldAsk] + ' 바꿀까요?'); return; }
+    else changed = applyChanges(text, false);
     if(!changed){
       V.retries++;
       if(V.retries >= 2){ discardDraft(); say('알아듣지 못했어요. 수정을 마칠게요.', backToIdle); }
@@ -1384,8 +1425,13 @@ function parseEvent(input, now, opts){
 
   function vHandle(alts){
     if(V.state !== 'wake'){
-      alts = alts.map(a => a.replace(/^\s*일정\s*케어[\s,.]*/, '').trim()).filter(Boolean);
-      if(!alts.length){ say('네, 말씀하세요.'); return; }
+      const lead = new RegExp('^\\s*(?:' + WAKE.source + ')[\\s,.!?]*', 'i');
+      const had = alts.some(a => lead.test(a));
+      alts = alts.map(a => a.replace(lead, '').trim()).filter(Boolean);
+      if(!alts.length){
+        if(had){ V.state = 'startAsk'; showState(); say('일정을 등록할까요?'); }
+        return;
+      }
     }
     const text = alts[0] || '';
     if(!text) return;
@@ -1402,6 +1448,13 @@ function parseEvent(input, now, opts){
       if(intentOf(text) && parseEvent(text, new Date(), {past:true}).found.date){ runIntent(intentOf(text), text); return; }
       handlePick(text); return;
     }
+    if(V.state === 'startAsk'){
+      const c = cmdOf(text);
+      if(c === 'no'){ V.state = 'event'; showState(); say('알겠어요.'); return; }
+      V.state = 'event'; showState();
+      if(c === 'yes'){ say('일정을 말씀하세요.'); return; }
+      vHandle([text]); return;
+    }
     if(V.state === 'editWhat'){ handleEditWhat(text); return; }
     if(V.state === 'event' && V.pend){
       const a = V.pend; V.pend = null;
@@ -1409,10 +1462,23 @@ function parseEvent(input, now, opts){
       if(/방금|마지막|이거|이\s*일정/.test(text)){ if(a === 'del') askDelete(); else voiceEditLast(); return; }
       runIntent('manage', text + (a === 'del' ? ' 삭제' : ' 수정')); return;
     }
+    if(V.state === 'event' && FIELDISH.test(text.replace(/\s+/g, ''))){
+      const e = items.find(x => x.id === (lastId || newestId()));
+      if(!e){ say('수정할 일정이 없어요. 수정할 일정의 날짜나 제목을 말씀해 주세요.'); return; }
+      startEdit(e); V.target = e; V.retries = 0; V.state = 'editWhat'; showState();
+      handleEditWhat(text); return;
+    }
     if(V.state === 'event'){ const k = intentOf(text); if(k){ runIntent(k, text); return; } }
     const cmd = cmdOf(text);
     if(V.state === 'confirmSave'){
       const xs = text.replace(/\s+/g, '');
+      if(V.fieldAsk){
+        const f = V.fieldAsk; V.fieldAsk = null;
+        if(cmd === 'no'){ discardDraft(); say('수정하지 않았어요.', backToIdle); return; }
+        if(applyChanges(text, false, f)) say('이렇게 수정할까요? ' + spokenEvent() + '.'); else say('못 알아들었어요. “저장” 또는 “취소”라고 말씀하세요.');
+        return;
+      }
+      if(fieldOnly(text)){ V.fieldAsk = fieldOnly(text); say('어떤 ' + FIELD_LABEL[V.fieldAsk] + ' 바꿀까요?'); return; }
       if(cmd === 'no' || /^(아니|취소|그만|안\s*해|말고)/.test(xs)){ discardDraft(); say('수정하지 않았어요.', backToIdle); return; }
       if(cmd === 'yes' || /^(수정|네|응|예|그래|맞|저장|해줘|해요|오케이|좋아|어|어어|웅|음|ㅇㅇ|넹|넵)/.test(xs)){ doEditSave(); return; }
       if(applyChanges(text, false)){ render(); say('이렇게 수정할까요? ' + spokenEvent() + '.'); return; }
@@ -1438,7 +1504,7 @@ function parseEvent(input, now, opts){
       }
       const k = intentOf(text); if(k){ runIntent(k, text); return; }
     }
-    if((V.state === 'confirm' || V.state === 'addMore') && MANAGE.test(text) && !['yes', 'no', 'del', 'edit'].includes(cmd)){
+    if((V.state === 'confirm' || V.state === 'addMore') && /삭제|지워|지우|없애|제거/.test(text) && !['yes', 'no', 'del', 'edit'].includes(cmd)){
       discardDraft(); runIntent('manage', text); return;
     }
     if(V.state === 'confirmDelete'){
@@ -1450,6 +1516,16 @@ function parseEvent(input, now, opts){
       if(cmd === 'yes' || cmd === 'del') doBulk();
       else say('삭제하지 않았어요.', backToIdle);
       return;
+    }
+    if(V.state === 'confirm' && V.fieldAsk){
+      const f = V.fieldAsk; V.fieldAsk = null;
+      if(cmd === 'no'){ discardDraft(); say('취소했어요.', backToIdle); return; }
+      if(applyChanges(text, false, f)){ say('이렇게 바꿨어요. ' + spokenEvent() + '. 저장할까요?', armTimer); }
+      else say('못 알아들었어요. 저장할까요?', armTimer);
+      return;
+    }
+    if(V.state === 'confirm' && fieldOnly(text)){
+      V.fieldAsk = fieldOnly(text); say('어떤 ' + FIELD_LABEL[V.fieldAsk] + ' 바꿀까요?'); return;
     }
     if(V.state === 'confirm'){
       if(cmd === 'yes'){ doSave(); return; }
@@ -1589,7 +1665,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1110-D');
+    push('버전: 1110-E');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
