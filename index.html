@@ -201,6 +201,8 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
 .maplink{margin-left:6px;color:var(--accent);font-size:12px;text-decoration:none;border-bottom:1px solid currentColor}
 .addbar{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 .addbar[hidden]{display:none}
+#gcal-box{flex-direction:column;gap:8px;width:100%}
+#gcal-box:not([hidden]){display:flex}
 .addbar-t{font-size:13px;color:var(--muted)}
 .addbar-b{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .brand{display:inline-flex;align-items:center;gap:7px}
@@ -236,10 +238,16 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <button id="kb" class="link" type="button" hidden>키보드의 마이크로 말하기</button>
     <input id="wake" type="checkbox" hidden>
     <input id="auto" type="checkbox" hidden>
-    <input id="barge" type="checkbox" hidden checked>
+    <input id="barge" type="checkbox" hidden>
     <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-E · 삭제·수정·브리핑 말하기 지원</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-G · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
+    <button id="gcal-link" class="link" type="button">구글 캘린더 연결</button>
+    <div id="gcal-box" hidden>
+      <input id="gas-url" type="url" inputmode="url" autocomplete="off" placeholder="웹 앱 주소를 붙여넣으세요" style="font:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);width:100%">
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="gas-ok" class="btn" type="button">연결</button><button id="gas-off" class="btn ghost" type="button">연결 해제</button></div>
+      <p id="gas-msg" class="hint" style="margin:0"></p>
+    </div>
     <pre id="diag-out" class="diag" hidden></pre>
   </section>
 
@@ -700,6 +708,7 @@ function parseEvent(input, now, opts){
         return '조직 정책으로 이 캘린더 기능을 쓸 수 없어요.';
       case 'server_unavailable': case 'upstream_error': case 'rate_limited':
         return '캘린더에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
+      case 'gas': return '구글 캘린더 연결에 문제가 있어요. ' + String(e.message || '').slice(0,100);
       case 'tool_error':
         return '캘린더가 요청을 받지 못했어요. ' + String(e.message || '').slice(0,120);
       default:
@@ -1036,8 +1045,10 @@ function parseEvent(input, now, opts){
       try{
         if(!('speechSynthesis' in window)){ fin(); return; }
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'ko-KR'; u.rate = 1.05;
-        u.onend = fin; u.onerror = fin;
+        u.lang = 'ko-KR'; u.rate = 1.05; u.volume = 1; u.pitch = 1;
+        try{ const vs = window.speechSynthesis.getVoices(); const kv = vs.find(v => /^ko/i.test(v.lang)); if(kv) u.voice = kv; }catch(_){}
+        u.onend = fin;
+        u.onerror = ev => { if(ev && ev.error === 'not-allowed'){ V.ttsBlocked = true; V.lastSpoken = text; toast('화면을 한 번 터치하면 안내 음성이 나와요.'); } fin(); };
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(u);
         setTimeout(fin, Math.min(12000, 1500 + text.length * 260));
@@ -1050,6 +1061,11 @@ function parseEvent(input, now, opts){
     });
   }
 
+  document.addEventListener('pointerdown', ev => {
+    if(ev.target && ev.target.closest && ev.target.closest('#mic')) return;
+    if(V.ttsBlocked){ V.ttsBlocked = false; const t = V.lastSpoken; try{ window.speechSynthesis.cancel(); }catch(_){} if(t) say(t); }
+    else if(V.talking){ V.sayId++; V.talking = false; try{ window.speechSynthesis.cancel(); }catch(_){} if(V.on && !V.recLive) vListen(); }
+  }, true);
   function backToIdle(){
     V.fieldAsk = null; V.retries = 0; V.pend = null; V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
     V.state = 'event'; showState();
@@ -1665,7 +1681,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1110-E');
+    push('버전: 1110-G');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
@@ -1750,6 +1766,36 @@ function parseEvent(input, now, opts){
   })();
 
   /* ---------- 시작 ---------- */
+  function makeGas(url){
+    return { callTool: async (server, tool, input) => {
+      let r;
+      try{ r = await fetch(url + (url.includes('?') ? '&' : '?') + 'a=' + encodeURIComponent(tool) + '&p=' + encodeURIComponent(JSON.stringify(input || {})), {redirect:'follow'}); }
+      catch(_){ throw {code:'gas', message:'인터넷 연결이나 주소를 확인해 주세요.'}; }
+      let j; try{ j = await r.json(); }catch(_){ throw {code:'gas', message:'응답을 읽지 못했어요. 웹 앱 배포 설정(액세스: 모든 사용자)을 확인해 주세요.'}; }
+      if(!j || !j.ok) throw {code:'gas', message: (j && j.error) || '알 수 없는 오류'};
+      return j;
+    } };
+  }
+  function mcpOn(){
+    $('saved-h').textContent = '저장한 일정';
+    $('b-refresh').hidden = false;
+    $('note').textContent = '말하면 구글 캘린더에 바로 저장돼요. 삼성 캘린더가 같은 구글 계정과 동기화돼 있으면 거기에도 나타나요.';
+  }
+  const GAS_KEY = 'ilcare.gas';
+  const gasGet = () => { try{ return localStorage.getItem(GAS_KEY) || ''; }catch(_){ return ''; } };
+  const gasSet = v => { try{ if(v) localStorage.setItem(GAS_KEY, v); else localStorage.removeItem(GAS_KEY); }catch(_){} };
+  const gasMsg = (t, err) => { const m = $('gas-msg'); m.textContent = t; m.style.color = err ? 'var(--err, #C62828)' : ''; };
+  $('gcal-link').addEventListener('click', () => { const b = $('gcal-box'); b.hidden = !b.hidden; $('gas-url').value = gasGet(); gasMsg(gasGet() ? '연결돼 있어요.' : ''); });
+  $('gas-ok').addEventListener('click', async () => {
+    const url = $('gas-url').value.trim();
+    if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\s]+\/exec/.test(url)){ gasMsg('script.google.com으로 시작하고 /exec로 끝나는 주소를 붙여넣어 주세요.', true); return; }
+    gasMsg('연결을 확인하는 중이에요.');
+    try{
+      const g = makeGas(url); await g.callTool('', 'ping', {});
+      gasSet(url); mcp = g; mcpOn(); applyMode(); gasMsg('연결됐어요. 이제 저장하면 구글 캘린더에 들어가요.'); refreshList();
+    }catch(e){ gasMsg(errText(e), true); }
+  });
+  $('gas-off').addEventListener('click', () => { gasSet(''); $('gas-url').value = ''; mcpOff(); applyMode(); loadLocal(); gasMsg('연결을 해제했어요.'); });
   function mcpOff(){
     mcp = null;
     $('saved-h').textContent = '저장한 녹음';
@@ -1762,7 +1808,11 @@ function parseEvent(input, now, opts){
   (async () => {
     let m = null;
     try{ m = window.claude ? await window.claude.use('mcp') : null; }catch(e){ m = null; }
-    if(!m){ mcpOff(); applyMode(); loadLocal(); return; }
+    if(!m){
+      const gu = gasGet();
+      if(gu){ mcp = makeGas(gu); mcpOn(); applyMode(); refreshList(); return; }
+      mcpOff(); applyMode(); loadLocal(); return;
+    }
     mcp = m;
     applyMode();
     refreshList();
