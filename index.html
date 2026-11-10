@@ -237,18 +237,18 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
     <input id="wake" type="checkbox" hidden>
     <input id="auto" type="checkbox" hidden>
     <input id="barge" type="checkbox" hidden checked>
-    <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요. “11일 일정 알려줘”, “내일 일정 수정”처럼 말하면 그날 일정을 읽어 줘요.</p>
-    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-A · 삭제·수정·브리핑 말하기 지원</p>
+    <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요.</p>
+    <p class="hint" style="opacity:.6;font-size:11.5px">버전 1110-D · 삭제·수정·브리핑 말하기 지원</p>
     <button id="diag" class="link" type="button">마이크 점검</button>
     <pre id="diag-out" class="diag" hidden></pre>
   </section>
 
   <section class="said">
     <div class="lab-row">
-      <label for="said" class="lab">인식된 문장 <span id="sampleTag" class="tag">예시</span></label>
+      <label for="said" class="lab">인식된 문장 <span id="sampleTag" class="tag" hidden>예시</span></label>
       <button id="b-wipe" class="link" type="button">녹음 지우기</button>
     </div>
-    <textarea id="said" rows="2" spellcheck="false" autocomplete="off">11월 10일 목과대 탐구관 407호 디지털교육 수업 5시</textarea>
+    <textarea id="said" rows="2" spellcheck="false" autocomplete="off"></textarea>
     <p class="note">마이크 버튼이 안 되면 이 입력창을 누르고 키보드의 마이크로 말하세요.</p>
   </section>
 
@@ -257,13 +257,13 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
       <h2 id="card-h" class="lab">새 일정</h2>
       <p id="summary" class="summary mono" aria-live="polite"></p>
     </div>
-    <label class="field title"><span class="lab">제목</span><input id="f-title" type="text" autocomplete="off" placeholder="예: 디지털교육 수업"></label>
+    <label class="field title"><span class="lab">제목</span><input id="f-title" type="text" autocomplete="off"></label>
     <div class="grid">
       <label class="field wide"><span class="lab">날짜</span><input id="f-date" type="date"></label>
       <label class="field"><span class="lab">시작</span><input id="f-start" type="time"></label>
       <label class="field"><span class="lab">종료</span><input id="f-end" type="time"></label>
     </div>
-    <label class="field"><span class="lab">장소</span><input id="f-loc" type="text" autocomplete="off" placeholder="예: 목포과학대학교 탐구관"></label>
+    <label class="field"><span class="lab">장소</span><input id="f-loc" type="text" autocomplete="off"></label>
     <div class="maps">
       <a id="nmap" class="btn ghost map" target="_blank" rel="noopener" aria-disabled="true">네이버지도</a>
       <a id="kmap" class="btn ghost map" target="_blank" rel="noopener" aria-disabled="true">카카오맵</a>
@@ -431,7 +431,13 @@ function parseEvent(input, now, opts){
     const locRe = /(\d+호(?:실|관)?|\d+동|관|실|센터|홀|강당|캠퍼스|도서관|체육관|카페|병원|본관|별관|학교|대학교|학원|공원|회관)$/;
     let idx = -1;
     for(let i=0; i<Math.min(tk.length,5); i++) if(locRe.test(tk[i])) idx = i;
-    if(idx >= 0){ loc = tk.slice(0,idx+1).join(' '); title = tk.slice(idx+1).join(' '); }
+    if(idx >= 0){
+      loc = tk.slice(0,idx+1).join(' '); title = tk.slice(idx+1).join(' ');
+      if(!title && idx > 0){
+        let j = 0; while(j < idx && !locRe.test(tk[j])) j++;
+        if(j > 0){ title = tk.slice(0,j).join(' ').replace(/\s*(장소|위치|장소는|위치는)$/,''); loc = tk.slice(j,idx+1).join(' '); }
+      }
+    }
   }
   out.title = title || out.holiday || '새 일정';
   out.location = loc;
@@ -451,7 +457,7 @@ function parseEvent(input, now, opts){
   const mic = $('mic'), icMic = $('ic-mic'), icStop = $('ic-stop'), sampleTag = $('sampleTag'), autoSw = $('auto'), bargeSw = $('barge');
   const listEl = $('list'), listMsg = $('list-msg');
 
-  let sample = true, hint = '', rec = null, listening = false, errored = false, heard = '';
+  let sample = false, hint = '', rec = null, listening = false, errored = false, heard = '';
   let mcp = null, busy = false, mode = 'new', editId = null, editWasAllDay = false, lastParsed = null, items = [];
   let addF = null, addT = 0, hitDate = '', hitIds = [], toastTimer = null, delTimer = null, armedDelete = null, started = false, typed = false, blurTimer = null, lastOk = false, lastId = null;
 
@@ -995,7 +1001,7 @@ function parseEvent(input, now, opts){
       confirmDelete: '삭제할까요? “삭제” 또는 “취소”라고 말하세요.',
       pick: '몇 번째, 또는 몇 시 일정인지 말씀하세요.',
       pickAction: '“삭제” 또는 “수정”이라고 말하세요.',
-      editWhat: '바꿀 내용을 말씀하세요. 예: 6시로, 장소는 도서관'
+      editWhat: '바꿀 내용을 말씀하세요.'
     }[V.state];
     setStatus(t || '');
   }
@@ -1044,38 +1050,54 @@ function parseEvent(input, now, opts){
   }
 
   function backToIdle(){
-    V.retries = 0; V.pend = null;
+    V.retries = 0; V.pend = null; V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
     V.state = 'event'; showState();
   }
   function discardDraft(){
+    V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
     if(mode === 'edit'){ mode = 'new'; editId = null; editWasAllDay = false; applyMode(); }
     blankEditor();
   }
 
   function handleEventText(text){
-    leaveSample(); ta.value = text; fromSentence();
-    const ok = lastParsed && (lastParsed.found.date || lastParsed.found.time);
-    if(!ok){
-      V.retries++;
-      if(V.retries >= 2) say('알아듣지 못했어요. 다시 불러 주세요.', backToIdle);
-      else say('날짜나 시간을 못 알아들었어요. 다시 말씀해 주세요.');
+    clearTimeout(V.pTimer);
+    const full = (V.partial ? V.partial + ' ' : '') + text;
+    leaveSample(); ta.value = full; fromSentence();
+    const hasWhen = !!(lastParsed && (lastParsed.found.date || lastParsed.found.time));
+    const hasTitle = !!(lastParsed && lastParsed.title && lastParsed.title !== '새 일정');
+    if(hasWhen && hasTitle){ V.partial = ''; V.pAsk = 0; V.retries = 0; askConfirm(); return; }
+    V.partial = full;
+    if(hasWhen){
+      V.pTimer = setTimeout(() => {
+        if(!V.on || V.state !== 'event' || !V.partial) return;
+        V.partial = ''; V.pAsk = 0; V.retries = 0;
+        if(!fTitle.value.trim() || fTitle.value.trim() === '새 일정') fTitle.value = '약속';
+        render(); askConfirm();
+      }, 2500);
       return;
     }
-    V.retries = 0;
-    if(autoSw.checked) doSave(); else askConfirm();
+    V.pTimer = setTimeout(() => {
+      if(!V.on || V.state !== 'event' || !V.partial) return;
+      V.pAsk = (V.pAsk || 0) + 1;
+      if(V.pAsk >= 3){ V.partial = ''; V.pAsk = 0; blankEditor(); say('알아듣지 못했어요. 처음부터 다시 말씀해 주세요.'); return; }
+      const w = lastParsed && (lastParsed.found.date || lastParsed.found.time);
+      say(w ? '무슨 일정인가요?' : '날짜나 시간을 말씀해 주세요.');
+    }, 3500);
   }
 
   function armTimer(){
     clearTimeout(V.cTimer);
     V.cTimer = setTimeout(() => {
       if(!V.on || V.talking) return;
-      if(V.state === 'confirm'){ V.state = 'addMore'; showState(); say('추가할 내용이 있나요? 없으면 그대로 저장할게요.', armTimer); }
-      else if(V.state === 'addMore'){ doSave(); }
-    }, 8000);
+      if(V.state === 'confirm'){
+        if(!V.nag){ V.nag = 1; say('저장할까요? “저장” 또는 “취소”라고 말씀하세요.', armTimer); }
+        else { V.nag = 0; discardDraft(); say('저장하지 않고 닫았어요.', backToIdle); }
+      }
+    }, 10000);
   }
   function askConfirm(){
-    V.state = 'confirm'; showState();
-    say(spokenEvent() + '. 저장할까요? 추가할 내용이 있으면 말씀하세요.', armTimer);
+    V.state = 'confirm'; V.nag = 0; showState();
+    say(spokenEvent() + '. 저장할까요?', armTimer);
   }
 
   // 말한 내용을 지금 고치는 중인 일정에 반영 (제목·장소·날짜·시간). free=true면 나머지 말은 제목에 덧붙임
@@ -1105,7 +1127,7 @@ function parseEvent(input, now, opts){
         const t = (p.title || '').trim();
         if(t && t !== '새 일정'){
           const cur = fTitle.value.trim();
-          fTitle.value = (!cur || cur === '새 일정') ? t : (cur.includes(t) ? cur : cur + ' ' + t);
+          fTitle.value = (!cur || cur === '새 일정' || cur === '약속') ? t : (cur.includes(t) ? cur : cur + ' ' + t);
           changed = true;
         }
       }
@@ -1166,6 +1188,7 @@ function parseEvent(input, now, opts){
   }
 
   async function runIntent(kind, text){
+    V.partial = ''; V.pAsk = 0; clearTimeout(V.pTimer);
     const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const p = parseEvent(text, now, {past:true});
     let d = p.found.date ? p.date : today;
@@ -1201,7 +1224,7 @@ function parseEvent(input, now, opts){
         list = allWord ? m : m.slice(0, 8); byWord = true;
         d = new Date(list[0].start && (list[0].start.dateTime || list[0].start.date) ? String(list[0].start.dateTime || list[0].start.date).slice(0, 10) + 'T00:00:00' : today);
       } else if(kind === 'manage' && (meaningful.length || !on(today).length)){
-        say(meaningful.length ? '“' + meaningful.join(' ') + '” 일정을 못 찾았어요. 제목이나 날짜를 다시 말씀해 주세요.' : '어떤 일정인지 못 찾았어요. 날짜나 제목을 같이 말씀해 주세요. 예를 들어 11일 일정 삭제.', backToIdle); return;
+        say(meaningful.length ? '“' + meaningful.join(' ') + '” 일정을 못 찾았어요. 제목이나 날짜를 다시 말씀해 주세요.' : '어떤 일정인지 못 찾았어요. 날짜나 제목을 같이 말씀해 주세요.', backToIdle); return;
       }
     }
     if(!list.length && p.noYear && d < today){
@@ -1306,7 +1329,7 @@ function parseEvent(input, now, opts){
       }
       if(!m.length && (del || edt) && x2(text)){
         V.act = del ? 'del' : 'edit';
-        say('어떤 일정을 ' + (del ? '삭제' : '수정') + '할까요? 1번, 2번처럼 번호나 시간을 말씀해 주세요.');
+        say('어떤 일정을 ' + (del ? '삭제' : '수정') + '할까요? 번호나 시간을 말씀해 주세요.');
         return;
       }
       if(m.length !== 1){
@@ -1332,7 +1355,7 @@ function parseEvent(input, now, opts){
   function startEditVoice(e, prefix){
     startEdit(e);
     V.target = e; V.retries = 0; V.state = 'editWhat'; showState();
-    say((prefix || '') + (e.summary || '일정') + ' 일정을 어떻게 바꿀까요? 시간은 6시로, 날짜는 내일로, 장소는 도서관, 제목은 회의 처럼 말씀하세요.');
+    say((prefix || '') + (e.summary || '일정') + ' 일정을 어떻게 바꿀까요? 바꿀 내용을 말씀하세요.');
   }
 
   async function handleEditWhat(text){
@@ -1346,7 +1369,7 @@ function parseEvent(input, now, opts){
     if(!changed){
       V.retries++;
       if(V.retries >= 2){ discardDraft(); say('알아듣지 못했어요. 수정을 마칠게요.', backToIdle); }
-      else say('못 알아들었어요. 6시로, 또는 장소는 도서관 이라고 말씀해 주세요.');
+      else say('못 알아들었어요. 바꿀 내용을 다시 말씀해 주세요.');
       return;
     }
     render();
@@ -1432,8 +1455,8 @@ function parseEvent(input, now, opts){
       if(cmd === 'yes'){ doSave(); return; }
       if(cmd === 'no' || cmd === 'del'){ discardDraft(); say('취소했어요.', backToIdle); return; }
       if(cmd === 'edit'){ V.state = 'event'; showState(); say('다시 말씀해 주세요.'); return; }
-      if(applyChanges(text, true)) doSave('추가해서 저장했어요. ');
-      else { say('못 알아들었어요. 저장할까요?', armTimer); }
+      if(applyChanges(text, true)){ render(); say('이렇게 바꿨어요. ' + spokenEvent() + '. 저장할까요?', armTimer); }
+      else { say('못 알아들었어요. “저장” 또는 “취소”라고 말씀하세요.', armTimer); }
       return;
     }
     if(V.state === 'addMore'){
@@ -1447,7 +1470,7 @@ function parseEvent(input, now, opts){
     if(cmd === 'yes'){ return; }
     if(cmd === 'del'){
       V.pend = 'del'; V.state = 'event'; showState();
-      say('어떤 일정을 삭제할까요? 날짜나 제목을 말씀하세요. 예를 들어 내일 일정 전부 삭제. 방금 저장한 일정이면 방금 거라고 말하세요.');
+      say('어떤 일정을 삭제할까요? 날짜나 제목을 말씀하세요. 방금 저장한 일정이면 방금 거라고 말하세요.');
       return;
     }
     if(cmd === 'edit'){
@@ -1487,8 +1510,10 @@ function parseEvent(input, now, opts){
         if(idx < V.done) return;
         got = true;
         const res = e.results[idx];
-        const alts = [];
-        for(let i=0; i<res.length; i++) alts.push(res[i].transcript.trim());
+        const total = e.results.length;
+        let alts = [];
+        if(total - V.done === 1){ for(let i=0; i<res.length; i++) alts.push(res[i].transcript.trim()); }
+        else { let full = ''; for(let i=V.done; i<total; i++) full += ' ' + (e.results[i][0].transcript || ''); alts = [full.replace(/\s+/g, ' ').trim()]; }
         const text = alts[0] || '';
         if(!text) return;
         clearTimeout(V.cTimer);
@@ -1498,9 +1523,8 @@ function parseEvent(input, now, opts){
           setStatus('듣는 중… ' + text);
         }
         clearTimeout(V.timer);
-        const fire = () => { if(V.talking || idx < V.done) return; V.done = idx + 1; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
-        if(res.isFinal) fire();
-        else V.timer = setTimeout(fire, V.state === 'wake' ? 700 : (V.state === 'event' ? 2600 : 1800));
+        const fire = () => { if(V.talking || total <= V.done) return; V.done = total; vHandle(alts.length > 1 && res.isFinal ? alts : [text]); };
+        V.timer = setTimeout(fire, V.state === 'wake' ? 700 : (res.isFinal ? 2000 : 3000));
       };
       r.onerror = e => {
         const c = e.error;
@@ -1565,7 +1589,7 @@ function parseEvent(input, now, opts){
     out.hidden = false;
     const L = [];
     const push = t => { L.push(t); out.textContent = L.join('\n'); };
-    push('버전: 1110-A');
+    push('버전: 1110-D');
     push('주소: ' + location.href.slice(0, 90));
     push('보안 연결: ' + (window.isSecureContext ? '예' : '아니오') + ' / ' + location.protocol);
     push('음성 인식 지원: ' + (SR ? '예' : '아니오'));
