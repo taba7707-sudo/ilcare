@@ -222,12 +222,18 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
   <section class="speak" aria-labelledby="speak-h">
     <h1 id="speak-h">일정을 말하면 알려드려요</h1>
     <p class="lead">날짜, 장소, 일정, 시간을 한 문장으로 말해 주세요.</p>
+    
     <button id="mic" class="mic" type="button" aria-pressed="false" aria-label="말하기 시작">
       <span class="gr"></span>
       <svg id="ic-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
       <svg id="ic-stop" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>
     </button>
     <p id="status" class="status" role="status" aria-live="polite">눌러서 말하기</p>
+    
+    <div style="display:flex; justify-content:center; margin-top:8px;">
+      <label class="auto"><input id="wake" type="checkbox"><span class="sw"></span> "일정케어" 음성 호출 켜기</label>
+    </div>
+
     <div id="addbar" class="addbar" hidden>
       <span class="addbar-t">방금 저장한 일정을 캘린더에 넣어 주세요</span>
       <div class="addbar-b">
@@ -236,7 +242,6 @@ a.mini{display:inline-flex;align-items:center;text-decoration:none}
       </div>
     </div>
     <button id="kb" class="link" type="button" hidden>키보드의 마이크로 말하기</button>
-    <input id="wake" type="checkbox" hidden>
     <input id="auto" type="checkbox" hidden>
     <input id="barge" type="checkbox" hidden>
     <p class="hint">화면을 켜 두면 바로 들어요. 말로 “저장”, “취소”, “삭제”, “수정”도 할 수 있어요. “11일 일정 알려줘”, “내일 일정 수정”처럼 말하면 그날 일정을 읽어 줘요.</p>
@@ -570,10 +575,11 @@ function parseEvent(input, now, opts){
       b = new Date(y, mo-1, d, Math.floor(t.smin/60), t.smin%60).getTime();
       e = new Date(y, mo-1, d, Math.floor(t.emin/60), t.emin%60).getTime();
     }
-    let u = 'intent:#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.item/event;S.title=' + encodeURIComponent(f.title || '새 일정');
+    let u = 'intent://com.android.calendar/event#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.item/event;S.title=' + encodeURIComponent(f.title || '새 일정');
     if(f.loc) u += ';S.eventLocation=' + encodeURIComponent(f.loc);
     u += ';S.description=' + encodeURIComponent(detailsFor(f.loc));
-    return u + ';l.beginTime=' + b + ';l.endTime=' + e + ';B.allDay=' + (t.allDay ? 'true' : 'false') + ';end';
+    u += ';l.beginTime=' + b + ';l.endTime=' + e + ';B.allDay=' + (t.allDay ? 'true' : 'false') + ';end';
+    return u;
   }
   function icsFrom(f){
     const esc = s => String(s || '').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
